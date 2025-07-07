@@ -1,4 +1,4 @@
-// table-manager.js 수정 버전
+// table-manager.js 수정 버전 (무한 스크롤 지원)
 
 class TableManager {
     static createHeader() {
@@ -68,66 +68,78 @@ class TableManager {
     
     static updateBody() {
         const tableBody = document.getElementById('table-body');
+        tableBody.innerHTML = '';
+        this.appendTableRows(STATE.displayedVideos);
+    }
+    
+    // ★★★ 새로운 함수 - 테이블에 행 추가 (무한 스크롤용) ★★★
+    static appendTableRows(videos) {
+        const tableBody = document.getElementById('table-body');
         let html = '';
         
-        STATE.displayedVideos.forEach(video => {
-            const thumbnail = video.snippet.thumbnails?.medium?.url || video.snippet.thumbnails?.default?.url;
-            const duration = UIUtils.formatDuration(video.contentDetails?.duration);
-            const videoUrl = CONFIG.EXTERNAL_URLS.YOUTUBE_VIDEO + video.id;
-            const channelUrl = CONFIG.EXTERNAL_URLS.YOUTUBE_CHANNEL + video.channel.id;
-            const captionUrl = UIUtils.generateCaptionUrl(video.id);
-            
-            html += `
-                <tr>
-                    <td class="thumbnail-cell">
-                        <img src="${thumbnail}" alt="썸네일" loading="lazy" onclick="UIUtils.openVideo('${videoUrl}')">
-                        <div class="duration-badge">${duration}</div>
-                    </td>
-                    <td class="channel-cell">
-                        <a href="${channelUrl}" target="_blank" class="channel-link">${video.channel.snippet.title}</a>
-                        <div style="margin-top: 5px;">
-                            <button class="favorite-btn" data-video-id="${video.id}" 
-                                    onclick="FavoritesManager.isFavorite('${video.id}') ? FavoritesManager.removeFavorite('${video.id}') : FavoritesManager.addFavorite(STATE.displayedVideos.find(v => v.id === '${video.id}'))"
-                                    style="background: none; border: none; font-size: 16px; cursor: pointer; padding: 2px;">
-                                ${FavoritesManager.isFavorite(video.id) ? '⭐' : '☆'}
-                            </button>
-                        </div>
-                    </td>
-                    <td class="title-cell">
-                        <div class="video-title">${video.snippet.title}</div>
-                        <div style="margin-top: 5px;">
-                            <a href="${captionUrl}" target="_blank" class="captions-btn">📝 자막</a>
-                        </div>
-                    </td>
-                    <td class="date-cell">${UIUtils.formatDate(video.snippet.publishedAt)}</td>
-                    <td class="number-cell">${UIUtils.formatNumber(video.subscriberCount)}</td>
-                    <td class="number-cell">${UIUtils.formatNumber(video.viewCount)}</td>
-                    <td>
-                        <span class="grade-cell grade-${video.contributionGrade.grade}">
-                            ${video.contributionGrade.text}
-                        </span>
-                    </td>
-                    <td class="number-cell">${video.performanceScore.toFixed(1)}배</td>
-                    <td>
-                        <span class="grade-cell grade-${video.influenceGrade.grade}">
-                            ${video.influenceGrade.text}
-                        </span>
-                    </td>
-                    <td class="date-cell duration-column">${duration}</td>
-                    <td class="number-cell compact-number likes-column">${UIUtils.formatNumber(video.likeCount)}</td>
-                    <td class="combined-cell">
-                        <div class="main-value">${UIUtils.formatNumber(video.commentCount)}</div>
-                        <div class="sub-value">${video.engagementRate.toFixed(1)}%</div>
-                    </td>
-                    <td class="number-cell compact-number video-count-column">${UIUtils.formatNumber(video.videoCount)}</td>
-                </tr>
-            `;
+        videos.forEach(video => {
+            html += this.generateTableRow(video);
         });
         
-        tableBody.innerHTML = html;
+        tableBody.insertAdjacentHTML('beforeend', html);
         
         // 즐겨찾기 버튼 상태 업데이트
         FavoritesManager.updateFavoriteButtons();
+    }
+    
+    // ★★★ 새로운 함수 - 테이블 행 HTML 생성 ★★★
+    static generateTableRow(video) {
+        const thumbnail = video.snippet.thumbnails?.medium?.url || video.snippet.thumbnails?.default?.url;
+        const duration = UIUtils.formatDuration(video.contentDetails?.duration);
+        const videoUrl = CONFIG.EXTERNAL_URLS.YOUTUBE_VIDEO + video.id;
+        const channelUrl = CONFIG.EXTERNAL_URLS.YOUTUBE_CHANNEL + video.channel.id;
+        const captionUrl = UIUtils.generateCaptionUrl(video.id);
+        
+        return `
+            <tr>
+                <td class="thumbnail-cell">
+                    <img src="${thumbnail}" alt="썸네일" loading="lazy" onclick="UIUtils.openVideo('${videoUrl}')">
+                    <div class="duration-badge">${duration}</div>
+                </td>
+                <td class="channel-cell">
+                    <a href="${channelUrl}" target="_blank" class="channel-link">${video.channel.snippet.title}</a>
+                    <div style="margin-top: 5px;">
+                        <button class="favorite-btn" data-video-id="${video.id}" 
+                                onclick="FavoritesManager.isFavorite('${video.id}') ? FavoritesManager.removeFavorite('${video.id}') : FavoritesManager.addFavorite(STATE.displayedVideos.find(v => v.id === '${video.id}'))"
+                                style="background: none; border: none; font-size: 16px; cursor: pointer; padding: 2px;">
+                            ${FavoritesManager.isFavorite(video.id) ? '⭐' : '☆'}
+                        </button>
+                    </div>
+                </td>
+                <td class="title-cell">
+                    <div class="video-title">${video.snippet.title}</div>
+                    <div style="margin-top: 5px;">
+                        <a href="${captionUrl}" target="_blank" class="captions-btn">📝 자막</a>
+                    </div>
+                </td>
+                <td class="date-cell">${UIUtils.formatDate(video.snippet.publishedAt)}</td>
+                <td class="number-cell">${UIUtils.formatNumber(video.subscriberCount)}</td>
+                <td class="number-cell">${UIUtils.formatNumber(video.viewCount)}</td>
+                <td>
+                    <span class="grade-cell grade-${video.contributionGrade.grade}">
+                        ${video.contributionGrade.text}
+                    </span>
+                </td>
+                <td class="number-cell">${video.performanceScore.toFixed(1)}배</td>
+                <td>
+                    <span class="grade-cell grade-${video.influenceGrade.grade}">
+                        ${video.influenceGrade.text}
+                    </span>
+                </td>
+                <td class="date-cell duration-column">${duration}</td>
+                <td class="number-cell compact-number likes-column">${UIUtils.formatNumber(video.likeCount)}</td>
+                <td class="combined-cell">
+                    <div class="main-value">${UIUtils.formatNumber(video.commentCount)}</div>
+                    <div class="sub-value">${video.engagementRate.toFixed(1)}%</div>
+                </td>
+                <td class="number-cell compact-number video-count-column">${UIUtils.formatNumber(video.videoCount)}</td>
+            </tr>
+        `;
     }
     
     static sortBy(column) {
@@ -225,50 +237,64 @@ class TableManager {
         }
     }
 
-    // table-manager.js에 추가할 함수
+    // ★★★ 모바일 카드 리스트 생성 ★★★
     static createMobileCardList() {
-        const resultsContent = document.getElementById('results-content');
-        let html = '<div class="mobile-card-container">';
+        const resultsContent = document.getElementById('results-content-mobile');
+        resultsContent.innerHTML = '<div class="mobile-card-container" id="mobile-card-container"></div>';
+        this.appendMobileCards(STATE.displayedVideos);
+    }
+    
+    // ★★★ 새로운 함수 - 모바일 카드 추가 (무한 스크롤용) ★★★
+    static appendMobileCards(videos) {
+        const container = document.getElementById('mobile-card-container');
+        if (!container) {
+            // 컨테이너가 없으면 새로 생성
+            this.createMobileCardList();
+            return;
+        }
         
-        STATE.displayedVideos.forEach(video => {
-            const thumbnail = video.snippet.thumbnails?.medium?.url || video.snippet.thumbnails?.default?.url;
-            const duration = UIUtils.formatDuration(video.contentDetails?.duration);
-            const videoUrl = CONFIG.EXTERNAL_URLS.YOUTUBE_VIDEO + video.id;
-            const channelUrl = CONFIG.EXTERNAL_URLS.YOUTUBE_CHANNEL + video.channel.id;
-            
-            html += `
-                <div class="mobile-video-card" onclick="UIUtils.openVideo('${videoUrl}')">
-                    <div class="card-thumbnail">
-                        <img src="${thumbnail}" alt="썸네일" loading="lazy">
-                        <div class="card-duration">${duration}</div>
-                    </div>
-                    <div class="card-info">
-                        <div class="card-title">${video.snippet.title}</div>
-                        <div class="card-channel">${video.channel.snippet.title}</div>
-                        <div class="card-stats">
-                            <span>조회수 ${UIUtils.formatNumber(video.viewCount)}</span>
-                            <span>구독자 ${UIUtils.formatNumber(video.subscriberCount)}</span>
-                        </div>
-                        <div class="card-grades">
-                            <span class="grade-badge grade-${video.influenceGrade.grade}">${video.influenceGrade.text}</span>
-                            <span class="performance-score">${video.performanceScore.toFixed(1)}배</span>
-                        </div>
-                    </div>
-                    <button class="card-favorite" data-video-id="${video.id}" 
-                            onclick="event.stopPropagation(); FavoritesManager.isFavorite('${video.id}') ? FavoritesManager.removeFavorite('${video.id}') : FavoritesManager.addFavorite(STATE.displayedVideos.find(v => v.id === '${video.id}'))"
-                            style="background: rgba(255,255,255,0.9); border: none; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-size: 16px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
-                        ${FavoritesManager.isFavorite(video.id) ? '⭐' : '☆'}
-                    </button>
-                </div>
-            `;
+        let html = '';
+        videos.forEach(video => {
+            html += this.generateMobileCard(video);
         });
         
-        html += '</div>';
-        resultsContent.innerHTML = html;
+        container.insertAdjacentHTML('beforeend', html);
         
         // 즐겨찾기 버튼 상태 업데이트
         FavoritesManager.updateFavoriteButtons();
     }
-
+    
+    // ★★★ 새로운 함수 - 모바일 카드 HTML 생성 ★★★
+    static generateMobileCard(video) {
+        const thumbnail = video.snippet.thumbnails?.medium?.url || video.snippet.thumbnails?.default?.url;
+        const duration = UIUtils.formatDuration(video.contentDetails?.duration);
+        const videoUrl = CONFIG.EXTERNAL_URLS.YOUTUBE_VIDEO + video.id;
+        const channelUrl = CONFIG.EXTERNAL_URLS.YOUTUBE_CHANNEL + video.channel.id;
+        
+        return `
+            <div class="mobile-video-card" onclick="UIUtils.openVideo('${videoUrl}')">
+                <div class="card-thumbnail">
+                    <img src="${thumbnail}" alt="썸네일" loading="lazy">
+                    <div class="card-duration">${duration}</div>
+                </div>
+                <div class="card-info">
+                    <div class="card-title">${video.snippet.title}</div>
+                    <div class="card-channel">${video.channel.snippet.title}</div>
+                    <div class="card-stats">
+                        <span>조회수 ${UIUtils.formatNumber(video.viewCount)}</span>
+                        <span>구독자 ${UIUtils.formatNumber(video.subscriberCount)}</span>
+                    </div>
+                    <div class="card-grades">
+                        <span class="grade-badge grade-${video.influenceGrade.grade}">${video.influenceGrade.text}</span>
+                        <span class="performance-score">${video.performanceScore.toFixed(1)}배</span>
+                    </div>
+                </div>
+                <button class="card-favorite" data-video-id="${video.id}" 
+                        onclick="event.stopPropagation(); FavoritesManager.isFavorite('${video.id}') ? FavoritesManager.removeFavorite('${video.id}') : FavoritesManager.addFavorite(STATE.displayedVideos.find(v => v.id === '${video.id}'))"
+                        style="background: rgba(255,255,255,0.9); border: none; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-size: 16px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+                    ${FavoritesManager.isFavorite(video.id) ? '⭐' : '☆'}
+                </button>
+            </div>
+        `;
+    }
 }
-

@@ -30,7 +30,11 @@
                 </button>
                 <button class="tab-btn" data-tab="keyword-helper" onclick="switchTab('keyword-helper')">
                     <span class="tab-icon">🎯</span>
-                    <span class="tab-text">키워드 도우미</span>
+                    <span class="tab-text">키워드</span>
+                </button>
+                <button class="tab-btn" data-tab="channel-analyzer" onclick="switchTab('channel-analyzer')">
+                    <span class="tab-icon">📺</span>
+                    <span class="tab-text">채널분석</span>
                 </button>
             </div>
 
@@ -172,6 +176,78 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- 채널 분석 탭 -->
+                <div class="tab-content" id="channel-analyzer-tab">
+                    <div class="channel-analyzer-content">
+                        <!-- 채널 URL 입력 -->
+                        <div class="channel-input-section">
+                            <div class="main-search">
+                                <input type="text" id="channelUrl" 
+                                       placeholder="🔗 채널 URL 입력 (예: https://www.youtube.com/@channelname)" 
+                                       class="main-search-input">
+                            </div>
+                            <button class="analyze-channel-btn" onclick="channelAnalyzer.analyzeChannel()">
+                                🔍 채널 분석
+                            </button>
+                        </div>
+                        
+                        <!-- 채널 정보 표시 -->
+                        <div class="channel-info-card" id="channelInfo" style="display: none;">
+                            <div class="card-header">
+                                <span class="card-icon">📺</span>
+                                <span class="card-title">채널 정보</span>
+                            </div>
+                            <div class="card-content">
+                                <div class="channel-details" id="channelDetails">
+                                    <!-- 채널 정보가 여기에 표시됩니다 -->
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 채널 즐겨찾기 -->
+                        <div class="channel-favorites-section">
+                            <div class="card-header">
+                                <span class="card-icon">⭐</span>
+                                <span class="card-title">즐겨찾기 채널</span>
+                            </div>
+                            <div class="card-content">
+                                <div class="favorite-channels" id="favoriteChannels">
+                                    <!-- 즐겨찾기 채널 목록이 여기에 표시됩니다 -->
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 분석 설정 -->
+                        <div class="setting-card" id="channelSettings" style="display: none;">
+                            <div class="card-header collapsible" onclick="toggleCard(this)">
+                                <span class="card-icon">⚙️</span>
+                                <span class="card-title">분석 설정</span>
+                                <span class="collapse-icon">▶</span>
+                            </div>
+                            <div class="card-content collapsed">
+                                <div class="setting-grid">
+                                    <div class="setting-item">
+                                        <label>영상 개수</label>
+                                        <select id="channelMaxResults" class="compact-select">
+                                            <option value="50">50개</option>
+                                            <option value="100">100개</option>
+                                            <option value="200">200개</option>
+                                        </select>
+                                    </div>
+                                    <div class="setting-item">
+                                        <label>정렬</label>
+                                        <select id="channelOrder" class="compact-select">
+                                            <option value="date">최신순</option>
+                                            <option value="viewCount">조회수순</option>
+                                            <option value="rating">평점순</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- 하단 버튼 영역 -->
@@ -220,14 +296,18 @@
                 </button>
                 <button class="tab-btn" data-tab="keyword-helper" onclick="switchTab('keyword-helper')">
                     <span class="tab-icon">🎯</span>
-                    <span class="tab-text">키워드 도우미</span>
+                    <span class="tab-text">키워드</span>
+                </button>
+                <button class="tab-btn" data-tab="channel-analyzer" onclick="switchTab('channel-analyzer')">
+                    <span class="tab-icon">📺</span>
+                    <span class="tab-text">채널</span>
                 </button>
             </div>
 
             <!-- 탭 컨텐츠 영역 -->
             <div class="tab-content-wrapper">
                 
-                <!-- 검색 탭 -->
+                <!-- 검색 탭 (모바일) -->
                 <div class="tab-content active" id="search-tab-mobile">
                     <!-- 메인 검색창 -->
                     <div class="main-search-section">
@@ -328,7 +408,7 @@
                     </div>
                 </div>
 
-                <!-- 키워드 도우미 탭 -->
+                <!-- 키워드 도우미 탭 (모바일) -->
                 <div class="tab-content" id="keyword-helper-tab-mobile">
                     <div class="keyword-helper-content mobile-keyword-helper">
                         <div class="keyword-categories">
@@ -355,6 +435,78 @@
                             <button class="helper-btn" onclick="keywordHelper.analyzeCurrentResults()">
                                 📊 결과 분석
                             </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 채널 분석 탭 (모바일) -->
+                <div class="tab-content" id="channel-analyzer-tab-mobile">
+                    <div class="channel-analyzer-content">
+                        <!-- 채널 URL 입력 -->
+                        <div class="channel-input-section">
+                            <div class="main-search">
+                                <input type="text" id="channelUrlMobile" 
+                                       placeholder="🔗 채널 URL 입력" 
+                                       class="main-search-input">
+                            </div>
+                            <button class="analyze-channel-btn" onclick="channelAnalyzer.analyzeChannel()">
+                                🔍 분석
+                            </button>
+                        </div>
+                        
+                        <!-- 채널 정보 표시 -->
+                        <div class="channel-info-card" id="channelInfoMobile" style="display: none;">
+                            <div class="card-header">
+                                <span class="card-icon">📺</span>
+                                <span class="card-title">채널 정보</span>
+                            </div>
+                            <div class="card-content">
+                                <div class="channel-details" id="channelDetailsMobile">
+                                    <!-- 채널 정보가 여기에 표시됩니다 -->
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 채널 즐겨찾기 -->
+                        <div class="channel-favorites-section">
+                            <div class="card-header">
+                                <span class="card-icon">⭐</span>
+                                <span class="card-title">즐겨찾기 채널</span>
+                            </div>
+                            <div class="card-content">
+                                <div class="favorite-channels" id="favoriteChannelsMobile">
+                                    <!-- 즐겨찾기 채널 목록이 여기에 표시됩니다 -->
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 분석 설정 -->
+                        <div class="setting-card" id="channelSettingsMobile" style="display: none;">
+                            <div class="card-header collapsible" onclick="toggleCard(this)">
+                                <span class="card-icon">⚙️</span>
+                                <span class="card-title">분석 설정</span>
+                                <span class="collapse-icon">▶</span>
+                            </div>
+                            <div class="card-content collapsed">
+                                <div class="setting-grid">
+                                    <div class="setting-item">
+                                        <label>영상 개수</label>
+                                        <select id="channelMaxResultsMobile" class="compact-select">
+                                            <option value="50">50개</option>
+                                            <option value="100">100개</option>
+                                            <option value="200">200개</option>
+                                        </select>
+                                    </div>
+                                    <div class="setting-item">
+                                        <label>정렬</label>
+                                        <select id="channelOrderMobile" class="compact-select">
+                                            <option value="date">최신순</option>
+                                            <option value="viewCount">조회수순</option>
+                                            <option value="rating">평점순</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -406,7 +558,7 @@
         </div>
     </div>
 
-    <!-- JavaScript 파일들을 순서대로 로드 -->
+    <!-- JavaScript 파일 로드 -->
     <script src="js/config.js"></script>
     <script src="js/ui-utils.js"></script>
     <script src="js/favorites.js"></script>
@@ -415,6 +567,7 @@
     <script src="js/api.js"></script>
     <script src="js/data-processor.js"></script>
     <script src="js/table-manager.js"></script>
+    <script src="js/channel-analyzer.js"></script>
     <script src="js/main.js"></script>
     
     <!-- 탭 전환 및 모바일 대응 스크립트 -->

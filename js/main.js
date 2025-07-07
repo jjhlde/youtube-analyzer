@@ -1,8 +1,13 @@
-// api.js에서 SearchParamsBuilder의 buildFromForm 메서드를 모바일 대응으로 확장
-// 기존 SearchParamsBuilder 클래스에 모바일 지원 추가
+// ============================================
+// YouTube 분석기 메인 클래스 (향상된 버전)
+// ============================================
 
-// YouTubeAnalyzer 클래스 수정
 class YouTubeAnalyzer {
+    static currentFilters = null; // 현재 필터 상태 저장
+    static infiniteScrollEnabled = true;
+    static isLoadingMore = false;
+    static handleScroll = null; // 스크롤 핸들러 참조 저장
+    
     static async init() {
         // 기본값 설정
         UIUtils.setDefaultDates();
@@ -465,18 +470,29 @@ class YouTubeAnalyzer {
         });
     }
     
+    // ★★★ 필터 값 유지 기능이 포함된 검색 함수 ★★★
     static async searchVideos(pageToken = '') {
         try {
-            // 검색 파라미터 구성
-            const searchParams = SearchParamsBuilder.buildFromForm();
+            // 첫 번째 검색이면 현재 필터 저장
+            if (!pageToken) {
+                this.currentFilters = SearchParamsBuilder.buildFromForm();
+                SearchParamsBuilder.validateParams(this.currentFilters);
+                resetState();
+                this.initializeResultTabs();
+            }
             
-            console.log('검색 시작:', searchParams);
+            // 저장된 필터 사용 (pageToken이 있으면 다음 페이지)
+            const searchParams = this.currentFilters || SearchParamsBuilder.buildFromForm();
+            
+            console.log('검색 시작:', searchParams, 'pageToken:', pageToken);
             
             // API 호출
             const data = await YouTubeAPI.searchAllVideos(searchParams, pageToken);
             
             if (!data.items || data.items.length === 0) {
-                UIUtils.showError('검색 결과가 없습니다. 다른 조건으로 시도해보세요.');
+                if (!pageToken) {
+                    UIUtils.showError('검색 결과가 없습니다. 다른 조건으로 시도해보세요.');
+                }
                 return;
             }
             
@@ -484,23 +500,15 @@ class YouTubeAnalyzer {
             
             // 영상 상세 정보 가져오기
             const videoIds = data.items.map(item => item.id.videoId).join(',');
-            console.log('영상 상세정보 요청:', videoIds);
-            
             const detailsData = await YouTubeAPI.getVideoDetails(videoIds);
-            console.log(`${detailsData.items.length}개의 영상 상세정보를 가져왔습니다.`);
             
             // 채널 정보 가져오기
             const channelIds = [...new Set(detailsData.items.map(item => item.snippet.channelId))];
-            console.log(`${channelIds.length}개의 고유 채널 정보 요청`);
-            
             await ChannelCache.updateCache(channelIds);
             
             // 데이터 처리 및 필터 적용
             const processedVideos = DataProcessor.processVideoData(detailsData.items);
-            console.log(`${processedVideos.length}개의 영상 데이터 처리 완료`);
-            
             const filteredVideos = DataProcessor.applyFilters(processedVideos);
-            console.log(`필터 적용 후 ${filteredVideos.length}개의 영상`);
             
             // 결과 표시
             const isAppend = pageToken !== '';
@@ -510,17 +518,24 @@ class YouTubeAnalyzer {
             STATE.nextPageToken = data.nextPageToken;
             this.setupPagination();
             
-            // 분석 탭 활성화 (검색 결과가 있을 때)
+            // 무한 스크롤 설정
+            if (!pageToken) {
+                this.setupInfiniteScroll();
+            }
+            
+            // 분석 탭 활성화
             if (filteredVideos.length > 0) {
                 this.enableAnalysisTab();
             }
             
+            // 로딩 완료
+            this.isLoadingMore = false;
+            
         } catch (error) {
             console.error('검색 중 오류:', error);
+            this.isLoadingMore = false;
             
-            // 구체적인 오류 메시지 제공
             let errorMessage = '검색 중 오류가 발생했습니다.';
-            
             if (error.message.includes('400')) {
                 errorMessage = '검색 조건이 올바르지 않습니다. 검색어와 날짜를 확인해주세요.';
             } else if (error.message.includes('403')) {
@@ -533,6 +548,101 @@ class YouTubeAnalyzer {
             
             UIUtils.showError(errorMessage);
         }
+    }
+    
+    // ============================================
+    // 무한 스크롤 구현
+    // ============================================
+    
+    static setupInfiniteScroll() {
+        // 기존 이벤트 리스너 제거
+        if (this.handleScroll) {
+            document.removeEventListener('scroll', this.handleScroll);
+        }
+        
+        // 새 이벤트 리스너 추가
+        this.handleScroll = this.throttle(() => {
+            if (!this.infiniteScrollEnabled || this.isLoadingMore || !STATE.nextPageToken) {
+                return;
+            }
+            
+            const scrollPosition = window.innerHeight + window.scrollY;
+            const documentHeight = document.documentElement.offsetHeight;
+            const threshold = 300; // 하단에서 300px 전에 로드 시작
+            
+            if (scrollPosition >= documentHeight - threshold) {
+                this.loadMoreResults();
+            }
+        }, 200);
+        
+        document.addEventListener('scroll', this.handleScroll);
+    }
+    
+    static async loadMoreResults() {
+        if (this.isLoadingMore || !STATE.nextPageToken) return;
+        
+        this.isLoadingMore = true;
+        
+        // 로딩 표시
+        const isMobile = window.innerWidth <= 768;
+        const resultsContent = isMobile ? 
+            document.getElementById('results-content-mobile') :
+            document.getElementById('results-content');
+            
+        const loadingDiv = document.createElement('div');
+        loadingDiv.className = 'infinite-scroll-loading';
+        loadingDiv.innerHTML = `
+            <div style="text-align: center; padding: 20px; color: #666;">
+                <div class="loading-spinner"></div>
+                <p>더 많은 결과를 불러오는 중...</p>
+            </div>
+        `;
+        loadingDiv.id = 'infinite-loading';
+        
+        resultsContent.appendChild(loadingDiv);
+        
+        try {
+            await this.searchVideos(STATE.nextPageToken);
+        } catch (error) {
+            console.error('무한 스크롤 로딩 오류:', error);
+            UIUtils.showNotification('추가 결과를 불러오는데 실패했습니다.', 'error');
+        } finally {
+            // 로딩 표시 제거
+            const loadingElement = document.getElementById('infinite-loading');
+            if (loadingElement) {
+                loadingElement.remove();
+            }
+        }
+    }
+    
+    // 쓰로틀링 함수
+    static throttle(func, limit) {
+        let inThrottle;
+        return function(...args) {
+            if (!inThrottle) {
+                func.apply(this, args);
+                inThrottle = true;
+                setTimeout(() => inThrottle = false, limit);
+            }
+        }
+    }
+    
+    // 무한 스크롤 토글
+    static toggleInfiniteScroll() {
+        this.infiniteScrollEnabled = !this.infiniteScrollEnabled;
+        
+        if (this.infiniteScrollEnabled) {
+            UIUtils.showNotification('무한 스크롤이 활성화되었습니다.', 'success');
+            this.setupInfiniteScroll();
+        } else {
+            UIUtils.showNotification('무한 스크롤이 비활성화되었습니다.', 'info');
+            if (this.handleScroll) {
+                document.removeEventListener('scroll', this.handleScroll);
+            }
+        }
+        
+        // 페이지네이션 버튼 업데이트
+        this.setupPagination();
     }
     
     static displayResults(videos, append = false) {
@@ -562,12 +672,24 @@ class YouTubeAnalyzer {
         
         // 모바일에서는 카드 레이아웃, 데스크톱에서는 테이블 레이아웃
         if (isMobile) {
-            TableManager.createMobileCardList();
+            if (append) {
+                // 모바일 카드 추가
+                TableManager.appendMobileCards(videos);
+            } else {
+                // 새로운 모바일 카드 리스트
+                TableManager.createMobileCardList();
+            }
         } else {
             if (!append || !document.querySelector('.results-table')) {
                 TableManager.createHeader();
             }
-            TableManager.updateBody();
+            if (append) {
+                // 테이블에 행 추가
+                TableManager.appendTableRows(videos);
+            } else {
+                // 새로운 테이블 바디
+                TableManager.updateBody();
+            }
         }
     }
     
@@ -579,9 +701,20 @@ class YouTubeAnalyzer {
         
         let html = '';
         
-        if (STATE.nextPageToken) {
-            html += '<button onclick="YouTubeAnalyzer.loadNextPage()">다음 페이지</button>';
+        // 무한 스크롤 토글 버튼
+        html += `
+            <div class="pagination-controls">
+                <button onclick="YouTubeAnalyzer.toggleInfiniteScroll()" class="scroll-toggle-btn">
+                    ${this.infiniteScrollEnabled ? '📜 무한스크롤 OFF' : '📜 무한스크롤 ON'}
+                </button>
+        `;
+        
+        // 다음 페이지 버튼 (무한 스크롤이 꺼져있을 때만 표시)
+        if (STATE.nextPageToken && !this.infiniteScrollEnabled) {
+            html += '<button onclick="YouTubeAnalyzer.loadNextPage()" class="next-page-btn">다음 페이지</button>';
         }
+        
+        html += '</div>';
         
         paginationDiv.innerHTML = html;
     }
@@ -594,7 +727,7 @@ class YouTubeAnalyzer {
     }
 }
 
-// ★★★ 전역 함수들 (HTML에서 호출하기 위해) - 이 부분이 중요합니다! ★★★
+// ★★★ 전역 함수들 (HTML에서 호출하기 위해) ★★★
 window.startSearch = function() {
     console.log('startSearch 함수 호출됨');
     YouTubeAnalyzer.startSearch();
