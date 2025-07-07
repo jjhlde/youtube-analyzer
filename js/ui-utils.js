@@ -14,8 +14,21 @@ class UIUtils {
             return `${year}-${month}-${day}`;
         };
         
-        document.getElementById('publishedAfter').value = formatDate(oneMonthAgo);
-        document.getElementById('publishedBefore').value = formatDate(today);
+        // PC용 요소들
+        const pcAfter = document.getElementById('publishedAfter');
+        const pcBefore = document.getElementById('publishedBefore');
+        
+        // 모바일용 요소들
+        const mobileAfter = document.getElementById('publishedAfterMobile');
+        const mobileBefore = document.getElementById('publishedBeforeMobile');
+        
+        const defaultAfter = formatDate(oneMonthAgo);
+        const defaultBefore = formatDate(today);
+        
+        if (pcAfter) pcAfter.value = defaultAfter;
+        if (pcBefore) pcBefore.value = defaultBefore;
+        if (mobileAfter) mobileAfter.value = defaultAfter;
+        if (mobileBefore) mobileBefore.value = defaultBefore;
     }
     
     // 포맷팅 함수들
@@ -90,9 +103,14 @@ class UIUtils {
     
     // UI 상태 관리
     static showLoading(message) {
-        const resultsContent = document.getElementById('results-content');
+        const isMobile = window.innerWidth <= 768;
+        const resultsContent = isMobile ? 
+            document.getElementById('results-content-mobile') :
+            document.getElementById('results-content');
         
-        if (document.querySelector('.results-table')) {
+        if (!resultsContent) return;
+        
+        if (document.querySelector('.results-table') || document.querySelector('.mobile-card-container')) {
             const loadingDiv = document.createElement('div');
             loadingDiv.className = 'loading';
             loadingDiv.textContent = message;
@@ -108,18 +126,43 @@ class UIUtils {
             resultsContent.innerHTML = `<div class="loading">${message}</div>`;
         }
         
-        document.getElementById('results-count').textContent = '로딩 중...';
+        const countElement = isMobile ? 
+            document.getElementById('results-count-mobile') :
+            document.getElementById('results-count');
+            
+        if (countElement) {
+            countElement.textContent = '로딩 중...';
+        }
     }
     
     static showError(message) {
-        document.getElementById('results-content').innerHTML = `
-            <div class="error">${message}</div>
-        `;
-        document.getElementById('results-count').textContent = '오류 발생';
+        const isMobile = window.innerWidth <= 768;
+        const resultsContent = isMobile ? 
+            document.getElementById('results-content-mobile') :
+            document.getElementById('results-content');
+            
+        const countElement = isMobile ? 
+            document.getElementById('results-count-mobile') :
+            document.getElementById('results-count');
+        
+        if (resultsContent) {
+            resultsContent.innerHTML = `<div class="error">${message}</div>`;
+        }
+        
+        if (countElement) {
+            countElement.textContent = '오류 발생';
+        }
     }
     
     static updateResultsCount(count) {
-        document.getElementById('results-count').textContent = `${count}개 영상 발견`;
+        const isMobile = window.innerWidth <= 768;
+        const countElement = isMobile ? 
+            document.getElementById('results-count-mobile') :
+            document.getElementById('results-count');
+            
+        if (countElement) {
+            countElement.textContent = `${count}개 영상 발견`;
+        }
     }
     
     // ★★★ 새로운 함수 - 알림 표시 ★★★
@@ -158,17 +201,51 @@ class UIUtils {
     
     // 필터 초기화
     static resetFilters() {
-        document.getElementById('searchQuery').value = '';
-        document.getElementById('orderBy').value = 'date';
-        document.getElementById('maxResults').value = 100;
-        document.getElementById('regionCode').value = 'KR';
-        document.getElementById('videoDuration').value = 'any';
-        document.getElementById('minInfluenceScore').value = '';
-        document.getElementById('minViewCount').value = '';
-        document.getElementById('maxViewCount').value = '';
-        document.getElementById('minSubscribers').value = '';
-        document.getElementById('maxSubscribers').value = '';
+        // PC용 요소들 초기화
+        const pcElements = {
+            searchQuery: '',
+            orderBy: 'date',
+            maxResults: '50',
+            regionCode: 'KR',
+            videoDuration: 'any',
+            minInfluenceScore: '',
+            minViewCount: '',
+            maxViewCount: '',
+            minSubscribers: '',
+            maxSubscribers: ''
+        };
         
+        // 모바일용 요소들 초기화
+        const mobileElements = {
+            searchQueryMobile: '',
+            orderByMobile: 'date',
+            maxResultsMobile: '50',
+            regionCodeMobile: 'KR',
+            videoDurationMobile: 'any',
+            minInfluenceScoreMobile: '',
+            minViewCountMobile: '',
+            maxViewCountMobile: '',
+            minSubscribersMobile: '',
+            maxSubscribersMobile: ''
+        };
+        
+        // PC 요소들 설정
+        Object.entries(pcElements).forEach(([id, value]) => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.value = value;
+            }
+        });
+        
+        // 모바일 요소들 설정
+        Object.entries(mobileElements).forEach(([id, value]) => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.value = value;
+            }
+        });
+        
+        // 날짜 기본값 설정
         this.setDefaultDates();
     }
 }
@@ -181,8 +258,10 @@ function toggleCard(header) {
     if (content.classList.contains('collapsed')) {
         content.classList.remove('collapsed');
         header.classList.remove('collapsed');
+        if (icon) icon.textContent = '▼';
     } else {
         content.classList.add('collapsed');
         header.classList.add('collapsed');
+        if (icon) icon.textContent = '▶';
     }
 }

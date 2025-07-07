@@ -19,7 +19,8 @@
 </head>
 <body>
     <div class="main-container">
-        <!-- 왼쪽 사이드바 - 탭 구조 -->
+        
+        <!-- ========== PC용 사이드바 (768px 이상) ========== -->
         <div class="sidebar">
             <!-- 탭 네비게이션 -->
             <div class="tab-navigation">
@@ -66,7 +67,7 @@
                                 
                                 <div class="setting-item">
                                     <label>개수</label>
-                                    <input type="number" id="maxResults" value="100" min="1" max="100" class="compact-input">
+                                    <input type="number" id="maxResults" value="50" min="1" max="100" class="compact-input">
                                 </div>
                                 
                                 <div class="setting-item">
@@ -84,46 +85,36 @@
                                     <select id="videoDuration" class="compact-select">
                                         <option value="any">전체</option>
                                         <option value="short">쇼츠</option>
-                                        <option value="longform">일반영상(중간+긴)</option>
+                                        <option value="longform">일반영상</option>
                                     </select>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- 날짜 설정 (기본 펼쳐짐) -->
-                    <div class="setting-card">
-                        <div class="card-header collapsible" onclick="toggleCard(this)">
-                            <span class="card-icon">📅</span>
-                            <span class="card-title">날짜 범위</span>
-                            <span class="collapse-icon">▼</span>
-                        </div>
-                        
-                        <div class="card-content">
-                            <div class="date-range">
-                                <div class="date-item">
-                                    <label>시작</label>
-                                    <input type="date" id="publishedAfter" class="compact-input">
-                                </div>
-                                <div class="date-separator">~</div>
-                                <div class="date-item">
-                                    <label>종료</label>
-                                    <input type="date" id="publishedBefore" class="compact-input">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 고급 필터 (기본 펼쳐짐) -->
+                    <!-- 고급 필터 -->
                     <div class="setting-card">
                         <div class="card-header collapsible" onclick="toggleCard(this)">
                             <span class="card-icon">🎛️</span>
                             <span class="card-title">고급 필터</span>
-                            <span class="collapse-icon">▼</span>
+                            <span class="collapse-icon">▶</span>
                         </div>
                         
-                        <div class="card-content">
+                        <div class="card-content collapsed">
                             <div class="filter-grid">
+                                <div class="filter-group">
+                                    <label>📅 날짜 범위</label>
+                                    <div class="date-range">
+                                        <div class="date-item">
+                                            <input type="date" id="publishedAfter" class="compact-input">
+                                        </div>
+                                        <span class="date-separator">~</span>
+                                        <div class="date-item">
+                                            <input type="date" id="publishedBefore" class="compact-input">
+                                        </div>
+                                    </div>
+                                </div>
+                                
                                 <div class="filter-group">
                                     <label>💪 영향력 지수</label>
                                     <input type="number" id="minInfluenceScore" placeholder="최소값" step="0.1" class="compact-input">
@@ -149,26 +140,6 @@
                             </div>
                         </div>
                     </div>
-
-                    <!-- 분석 버튼 섹션 추가 -->
-                    <div class="setting-card analysis-section">
-                        <div class="card-header">
-                            <span class="card-icon">📊</span>
-                            <span class="card-title">결과 분석</span>
-                        </div>
-                        
-                        <div class="card-content">
-                            <div class="analysis-info">
-                                <p style="font-size: 13px; color: #6c757d; margin-bottom: 15px;">
-                                    검색 완료 후 클릭하면 떡상 가능성, 경쟁 현황 등을 분석해드립니다.
-                                </p>
-                                <button class="analysis-trigger-btn" onclick="keywordHelper.analyzeCurrentResults()">
-                                    <span class="btn-icon">📈</span>
-                                    현재 결과 분석
-                                </button>
-                            </div>
-                        </div>
-                    </div>
                 </div>
 
                 <!-- 키워드 도우미 탭 -->
@@ -182,8 +153,8 @@
                                 <button class="category-btn" data-category="hobby">🎨 취미</button>
                                 <button class="category-btn" data-category="family">👨‍👩‍👧‍👦 가족</button>
                                 <button class="category-btn" data-category="lifestyle">🏠 일상</button>
-                                <button class="category-btn" data-category="info_channel">📋 정보채널</button>
-                                <button class="category-btn" data-category="story_channel">📖 썰채널</button>
+                                <button class="category-btn" data-category="info_channel">📋 정보</button>
+                                <button class="category-btn" data-category="story_channel">📖 썰</button>
                             </div>
                         </div>
                         
@@ -203,7 +174,7 @@
                 </div>
             </div>
 
-            <!-- 하단 고정 버튼 영역 -->
+            <!-- 하단 버튼 영역 -->
             <div class="sidebar-footer">
                 <button class="search-btn" onclick="startSearch()">
                     <span class="btn-icon">🚀</span>
@@ -220,7 +191,7 @@
             </div>
         </div>
         
-        <!-- 오른쪽 결과 영역 -->
+        <!-- ========== PC용 콘텐츠 영역 (768px 이상) ========== -->
         <div class="content-area">
             <div class="results-container">
                 <div class="results-header">
@@ -230,12 +201,198 @@
                 
                 <div id="results-content">
                     <div class="loading">
-                        왼쪽에서 검색 조건을 설정하고 "분석 시작" 버튼을 클릭하세요.<br>
+                        상단에서 검색 조건을 설정하고 "분석 시작" 버튼을 클릭하세요.<br>
                         <strong>🎯 키워드 도우미</strong>를 활용하면 더 정확한 타겟팅이 가능합니다!
                     </div>
                 </div>
                 
                 <div id="pagination" class="pagination"></div>
+            </div>
+        </div>
+
+        <!-- ========== 모바일용 상단 제어 패널 (768px 이하) ========== -->
+        <div class="control-panel">
+            <!-- 탭 네비게이션 -->
+            <div class="tab-navigation">
+                <button class="tab-btn active" data-tab="search" onclick="switchTab('search')">
+                    <span class="tab-icon">🔍</span>
+                    <span class="tab-text">검색</span>
+                </button>
+                <button class="tab-btn" data-tab="keyword-helper" onclick="switchTab('keyword-helper')">
+                    <span class="tab-icon">🎯</span>
+                    <span class="tab-text">키워드 도우미</span>
+                </button>
+            </div>
+
+            <!-- 탭 컨텐츠 영역 -->
+            <div class="tab-content-wrapper">
+                
+                <!-- 검색 탭 -->
+                <div class="tab-content active" id="search-tab-mobile">
+                    <!-- 메인 검색창 -->
+                    <div class="main-search-section">
+                        <div class="main-search">
+                            <input type="text" id="searchQueryMobile" placeholder="🔍 검색 키워드 입력" class="main-search-input">
+                        </div>
+                    </div>
+
+                    <!-- 기본 설정 -->
+                    <div class="setting-card basic-settings">
+                        <div class="card-header">
+                            <span class="card-icon">⚡</span>
+                            <span class="card-title">기본 설정</span>
+                        </div>
+                        
+                        <div class="card-content">
+                            <div class="setting-grid mobile-grid">
+                                <div class="setting-item">
+                                    <label>정렬</label>
+                                    <select id="orderByMobile" class="compact-select">
+                                        <option value="date">최신순</option>
+                                        <option value="relevance">관련성순</option>
+                                        <option value="viewCount">조회수순</option>
+                                        <option value="rating">평점순</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="setting-item">
+                                    <label>개수</label>
+                                    <input type="number" id="maxResultsMobile" value="50" min="1" max="100" class="compact-input">
+                                </div>
+                                
+                                <div class="setting-item">
+                                    <label>국가</label>
+                                    <select id="regionCodeMobile" class="compact-select">
+                                        <option value="KR">🇰🇷 한국</option>
+                                        <option value="">🌍 전세계</option>
+                                        <option value="US">🇺🇸 미국</option>
+                                        <option value="JP">🇯🇵 일본</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="setting-item">
+                                    <label>길이</label>
+                                    <select id="videoDurationMobile" class="compact-select">
+                                        <option value="any">전체</option>
+                                        <option value="short">쇼츠</option>
+                                        <option value="longform">일반영상</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 고급 필터 (축약) -->
+                    <div class="setting-card">
+                        <div class="card-header collapsible" onclick="toggleCard(this)">
+                            <span class="card-icon">🎛️</span>
+                            <span class="card-title">고급 필터</span>
+                            <span class="collapse-icon">▶</span>
+                        </div>
+                        
+                        <div class="card-content collapsed">
+                            <div class="filter-grid mobile-filters">
+                                <div class="filter-group">
+                                    <label>📅 날짜 범위</label>
+                                    <div class="date-range-mobile">
+                                        <input type="date" id="publishedAfterMobile" class="compact-input">
+                                        <span>~</span>
+                                        <input type="date" id="publishedBeforeMobile" class="compact-input">
+                                    </div>
+                                </div>
+                                
+                                <div class="filter-group">
+                                    <label>💪 영향력 지수</label>
+                                    <input type="number" id="minInfluenceScoreMobile" placeholder="최소값" step="0.1" class="compact-input">
+                                </div>
+                                
+                                <div class="filter-group">
+                                    <label>👀 조회수 범위</label>
+                                    <div class="range-inputs">
+                                        <input type="number" id="minViewCountMobile" placeholder="최소" class="compact-input range-input">
+                                        <span class="range-separator">~</span>
+                                        <input type="number" id="maxViewCountMobile" placeholder="최대" class="compact-input range-input">
+                                    </div>
+                                </div>
+                                
+                                <div class="filter-group">
+                                    <label>👥 구독자 범위</label>
+                                    <div class="range-inputs">
+                                        <input type="number" id="minSubscribersMobile" placeholder="최소" class="compact-input range-input">
+                                        <span class="range-separator">~</span>
+                                        <input type="number" id="maxSubscribersMobile" placeholder="최대" class="compact-input range-input">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 키워드 도우미 탭 -->
+                <div class="tab-content" id="keyword-helper-tab-mobile">
+                    <div class="keyword-helper-content mobile-keyword-helper">
+                        <div class="keyword-categories">
+                            <h4>카테고리별 추천 키워드</h4>
+                            <div class="category-buttons mobile-categories">
+                                <button class="category-btn" data-category="health">🏥 건강</button>
+                                <button class="category-btn" data-category="finance">💰 재정</button>
+                                <button class="category-btn" data-category="hobby">🎨 취미</button>
+                                <button class="category-btn" data-category="family">👨‍👩‍👧‍👦 가족</button>
+                                <button class="category-btn" data-category="lifestyle">🏠 일상</button>
+                                <button class="category-btn" data-category="info_channel">📋 정보</button>
+                                <button class="category-btn" data-category="story_channel">📖 썰</button>
+                            </div>
+                        </div>
+                        
+                        <div class="keyword-suggestions mobile-suggestions" id="keywordSuggestionsMobile">
+                            <p class="placeholder-text">위에서 카테고리를 선택하면 관련 키워드를 추천해드립니다.</p>
+                        </div>
+                        
+                        <div class="quick-actions mobile-actions">
+                            <button class="helper-btn" onclick="keywordHelper.generateRandomKeywords()">
+                                🎲 랜덤 키워드
+                            </button>
+                            <button class="helper-btn" onclick="keywordHelper.analyzeCurrentResults()">
+                                📊 결과 분석
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 하단 버튼 영역 -->
+            <div class="control-footer">
+                <button class="search-btn" onclick="startSearch()">
+                    <span class="btn-icon">🚀</span>
+                    분석 시작
+                </button>
+                <button class="action-btn favorites-btn" onclick="FavoritesManager.openFavoritesModal()">
+                    <span class="btn-icon">⭐</span>
+                    즐겨찾기
+                </button>
+                <button class="action-btn reset-btn" onclick="resetFilters()">
+                    <span class="btn-icon">🔄</span>
+                    초기화
+                </button>
+            </div>
+        </div>
+        
+        <!-- ========== 모바일용 하단 결과 영역 (768px 이하) ========== -->
+        <div class="results-area">
+            <div class="results-container mobile-results">
+                <div class="results-header">
+                    <h3>검색 결과</h3>
+                    <div id="results-count-mobile">검색을 시작해주세요</div>
+                </div>
+                
+                <div id="results-content-mobile">
+                    <div class="loading">
+                        상단에서 검색 조건을 설정하고 "분석 시작" 버튼을 클릭하세요.<br>
+                        <strong>🎯 키워드 도우미</strong>를 활용하면 더 정확한 타겟팅이 가능합니다!
+                    </div>
+                </div>
+                
+                <div id="pagination-mobile" class="pagination"></div>
             </div>
         </div>
     </div>
@@ -260,10 +417,13 @@
     <script src="js/table-manager.js"></script>
     <script src="js/main.js"></script>
     
-    <!-- 탭 전환 스크립트 -->
+    <!-- 탭 전환 및 모바일 대응 스크립트 -->
     <script>
         function switchTab(tabName) {
             console.log('Switching to tab:', tabName);
+            
+            const isMobile = window.innerWidth <= 768;
+            const suffix = isMobile ? '-mobile' : '';
             
             // 모든 탭 버튼과 컨텐츠 비활성화
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -271,10 +431,13 @@
             
             // 선택된 탭 활성화
             const targetButton = document.querySelector(`[data-tab="${tabName}"]`);
-            const targetContent = document.getElementById(`${tabName}-tab`);
+            const targetContent = document.getElementById(`${tabName}-tab${suffix}`);
             
             if (targetButton && targetContent) {
-                targetButton.classList.add('active');
+                // 같은 data-tab을 가진 모든 버튼 활성화 (PC/모바일 동기화)
+                document.querySelectorAll(`[data-tab="${tabName}"]`).forEach(btn => {
+                    btn.classList.add('active');
+                });
                 targetContent.classList.add('active');
                 console.log('Tab switched successfully');
             } else {
@@ -287,6 +450,30 @@
             console.log('Page loaded, initializing tabs');
             switchTab('search');
         });
+
+        // 모바일/PC 값 동기화 함수
+        function syncValues() {
+            const isMobile = window.innerWidth <= 768;
+            
+            if (isMobile) {
+                // PC 값을 모바일로 복사
+                document.getElementById('searchQueryMobile').value = document.getElementById('searchQuery').value || '';
+                document.getElementById('orderByMobile').value = document.getElementById('orderBy').value || 'date';
+                document.getElementById('maxResultsMobile').value = document.getElementById('maxResults').value || '50';
+                document.getElementById('regionCodeMobile').value = document.getElementById('regionCode').value || 'KR';
+                document.getElementById('videoDurationMobile').value = document.getElementById('videoDuration').value || 'any';
+            } else {
+                // 모바일 값을 PC로 복사
+                document.getElementById('searchQuery').value = document.getElementById('searchQueryMobile').value || '';
+                document.getElementById('orderBy').value = document.getElementById('orderByMobile').value || 'date';
+                document.getElementById('maxResults').value = document.getElementById('maxResultsMobile').value || '50';
+                document.getElementById('regionCode').value = document.getElementById('regionCodeMobile').value || 'KR';
+                document.getElementById('videoDuration').value = document.getElementById('videoDurationMobile').value || 'any';
+            }
+        }
+
+        // 리사이즈 이벤트에서 값 동기화
+        window.addEventListener('resize', syncValues);
     </script>
 </body>
 </html>

@@ -1,5 +1,7 @@
-// 메인 애플리케이션 로직
+// api.js에서 SearchParamsBuilder의 buildFromForm 메서드를 모바일 대응으로 확장
+// 기존 SearchParamsBuilder 클래스에 모바일 지원 추가
 
+// YouTubeAnalyzer 클래스 수정
 class YouTubeAnalyzer {
     static async init() {
         // 기본값 설정
@@ -10,15 +12,18 @@ class YouTubeAnalyzer {
     }
     
     static setupEventListeners() {
-        // 검색창에서 Enter 키 입력시 검색 실행
-        const searchInput = document.getElementById('searchQuery');
-        if (searchInput) {
-            searchInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    YouTubeAnalyzer.startSearch();
-                }
-            });
-        }
+        // PC/모바일 검색창 모두에 Enter 키 이벤트 등록
+        const searchInputs = ['searchQuery', 'searchQueryMobile'];
+        searchInputs.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        YouTubeAnalyzer.startSearch();
+                    }
+                });
+            }
+        });
         
         // 모달 외부 클릭시 닫기
         const modal = document.getElementById('captionModal');
@@ -54,45 +59,64 @@ class YouTubeAnalyzer {
     
     // ★★★ 새로운 함수 - 결과 탭 초기화 ★★★
     static initializeResultTabs() {
-        const resultsContainer = document.querySelector('.results-container');
+        const isMobile = window.innerWidth <= 768;
+        const resultsContainer = isMobile ? 
+            document.querySelector('.results-area .results-container') :
+            document.querySelector('.content-area .results-container');
         
         // 분석 상태 초기화
         window.analysisAvailable = false;
         window.currentAnalysisData = null;
         
-        // 탭 HTML 구조 생성
-        const tabsHTML = `
-            <div class="results-tabs">
-                <button class="results-tab-btn active" data-tab="search" onclick="YouTubeAnalyzer.switchResultTab('search')">
-                    <span class="tab-icon">📊</span>
-                    <span class="tab-text">검색결과</span>
-                </button>
-                <button class="results-tab-btn disabled" data-tab="analysis" onclick="YouTubeAnalyzer.switchResultTab('analysis')" disabled>
-                    <span class="tab-icon">📈</span>
-                    <span class="tab-text">분석결과</span>
-                    <span class="tab-badge">대기중</span>
-                </button>
-            </div>
-            
-            <div class="results-tab-content">
-                <div class="tab-panel active" id="search-results-panel">
-                    <div class="results-header">
-                        <h3>검색 결과</h3>
-                        <div id="results-count">검색을 시작해주세요</div>
-                    </div>
-                    
-                    <div id="results-content"></div>
-                    
-                    <div id="pagination" class="pagination"></div>
+        if (!isMobile) {
+            // PC용 탭 HTML 구조 생성
+            const tabsHTML = `
+                <div class="results-tabs">
+                    <button class="results-tab-btn active" data-tab="search" onclick="YouTubeAnalyzer.switchResultTab('search')">
+                        <span class="tab-icon">📊</span>
+                        <span class="tab-text">검색결과</span>
+                    </button>
+                    <button class="results-tab-btn disabled" data-tab="analysis" onclick="YouTubeAnalyzer.switchResultTab('analysis')" disabled>
+                        <span class="tab-icon">📈</span>
+                        <span class="tab-text">분석결과</span>
+                        <span class="tab-badge">대기중</span>
+                    </button>
                 </div>
                 
-                <div class="tab-panel" id="analysis-results-panel">
-                    <!-- 분석 결과는 나중에 동적으로 생성 -->
+                <div class="results-tab-content">
+                    <div class="tab-panel active" id="search-results-panel">
+                        <div class="results-header">
+                            <h3>검색 결과</h3>
+                            <div id="results-count">검색을 시작해주세요</div>
+                        </div>
+                        
+                        <div id="results-content"></div>
+                        
+                        <div id="pagination" class="pagination"></div>
+                    </div>
+                    
+                    <div class="tab-panel" id="analysis-results-panel">
+                        <!-- 분석 결과는 나중에 동적으로 생성 -->
+                    </div>
                 </div>
-            </div>
-        `;
-        
-        resultsContainer.innerHTML = tabsHTML;
+            `;
+            
+            resultsContainer.innerHTML = tabsHTML;
+        } else {
+            // 모바일용은 단순 구조 유지
+            const simpleHTML = `
+                <div class="results-header">
+                    <h3>검색 결과</h3>
+                    <div id="results-count-mobile">검색을 시작해주세요</div>
+                </div>
+                
+                <div id="results-content-mobile"></div>
+                
+                <div id="pagination-mobile" class="pagination"></div>
+            `;
+            
+            resultsContainer.innerHTML = simpleHTML;
+        }
     }
     
     // ★★★ 새로운 함수 - 결과 탭 전환 ★★★
@@ -123,16 +147,19 @@ class YouTubeAnalyzer {
     // ★★★ 수정된 함수 - 분석 탭 활성화하지만 검색결과 탭 유지 ★★★
     static enableAnalysisTab() {
         const analysisTabBtn = document.querySelector('[data-tab="analysis"]');
+        if (!analysisTabBtn) return; // 모바일에서는 탭이 없을 수 있음
+        
         const tabBadge = analysisTabBtn.querySelector('.tab-badge');
         
         analysisTabBtn.classList.remove('disabled');
         analysisTabBtn.disabled = false;
-        tabBadge.textContent = '준비완료';
-        tabBadge.style.background = '#28a745';
+        if (tabBadge) {
+            tabBadge.textContent = '준비완료';
+            tabBadge.style.background = '#28a745';
+        }
         
         window.analysisAvailable = true;
         
-        // ★★★ 수정: 자동으로 분석 탭으로 전환하지 않고 검색결과 탭 유지 ★★★
         console.log('분석 탭이 활성화되었습니다. 검색결과 탭을 유지합니다.');
     }
     
@@ -148,7 +175,9 @@ class YouTubeAnalyzer {
         
         // 분석 결과 패널에 HTML 삽입
         const analysisPanel = document.getElementById('analysis-results-panel');
-        analysisPanel.innerHTML = this.createAnalysisHTML(analysisData);
+        if (analysisPanel) {
+            analysisPanel.innerHTML = this.createAnalysisHTML(analysisData);
+        }
     }
     
     // ★★★ 새로운 함수 - 분석 수행 ★★★
@@ -247,13 +276,15 @@ class YouTubeAnalyzer {
     // ★★★ 새로운 함수 - 분석 HTML 생성 ★★★
     static createAnalysisHTML(data) {
         const { analyzedVideos, topTrendVideos, categoryStats, gapAnalysis } = data;
+        const isMobile = window.innerWidth <= 768;
+        const suffix = isMobile ? 'Mobile' : '';
         
         return `
             <div class="analysis-results">
                 <div class="analysis-header">
                     <h2>📊 키워드 분석 결과</h2>
                     <div class="analysis-meta">
-                        <span>검색어: "${document.getElementById('searchQuery').value}"</span>
+                        <span>검색어: "${document.getElementById(`searchQuery${suffix}`).value}"</span>
                     </div>
                 </div>
                 
@@ -358,8 +389,8 @@ class YouTubeAnalyzer {
                         </div>
                         <div class="accordion-content">
                             <div class="strategy-tips">
-                                <div class="tip-item">🎬 정보전달형: "${document.getElementById('searchQuery').value} 완전정복" 시리즈</div>
-                                <div class="tip-item">📖 썰채널형: "${document.getElementById('searchQuery').value}에 대한 충격적인 진실" 스타일</div>
+                                <div class="tip-item">🎬 정보전달형: "${document.getElementById(`searchQuery${suffix}`).value} 완전정복" 시리즈</div>
+                                <div class="tip-item">📖 썰채널형: "${document.getElementById(`searchQuery${suffix}`).value}에 대한 충격적인 진실" 스타일</div>
                                 <div class="tip-item">👥 타겟팅: 50-70대 + 해당 주제에 관심있는 자녀 세대</div>
                                 <div class="tip-item">🎯 차별화: ${gapAnalysis.opportunities.length > 0 ? gapAnalysis.opportunities[0] : '고품질 콘텐츠로 승부'}</div>
                             </div>
@@ -392,10 +423,13 @@ class YouTubeAnalyzer {
     
     // 분석 결과 내보내기
     static exportAnalysis() {
+        const isMobile = window.innerWidth <= 768;
+        const suffix = isMobile ? 'Mobile' : '';
+        
         const analysisText = `
 유튜브 키워드 분석 결과
 
-검색어: ${document.getElementById('searchQuery').value}
+검색어: ${document.getElementById(`searchQuery${suffix}`).value}
 분석일시: ${new Date().toLocaleString()}
 
 === 기본 통계 ===
@@ -404,8 +438,8 @@ class YouTubeAnalyzer {
 - 평균 구독자: ${Math.round(STATE.displayedVideos.reduce((sum, v) => sum + v.subscriberCount, 0) / STATE.displayedVideos.length).toLocaleString()}명
 
 === 추천 콘텐츠 아이디어 ===
-정보전달형: "${document.getElementById('searchQuery').value} 완전정복" 시리즈
-썰채널형: "${document.getElementById('searchQuery').value}의 숨겨진 진실" 스타일
+정보전달형: "${document.getElementById(`searchQuery${suffix}`).value} 완전정복" 시리즈
+썰채널형: "${document.getElementById(`searchQuery${suffix}`).value}의 숨겨진 진실" 스타일
 
 === 타겟 연령대 ===
 주타겟: 50-70세
@@ -502,11 +536,17 @@ class YouTubeAnalyzer {
     }
     
     static displayResults(videos, append = false) {
-        const resultsContent = document.getElementById('results-content');
+        const isMobile = window.innerWidth <= 768;
+        const resultsContent = isMobile ? 
+            document.getElementById('results-content-mobile') :
+            document.getElementById('results-content');
         
         if (videos.length === 0 && !append) {
             resultsContent.innerHTML = '<div class="error">필터 조건에 맞는 영상이 없습니다.</div>';
-            document.getElementById('results-count').textContent = '결과 없음';
+            const countElement = isMobile ? 
+                document.getElementById('results-count-mobile') :
+                document.getElementById('results-count');
+            countElement.textContent = '결과 없음';
             return;
         }
         
@@ -520,17 +560,23 @@ class YouTubeAnalyzer {
         
         UIUtils.updateResultsCount(STATE.displayedVideos.length);
         
-        if (!append || !document.querySelector('.results-table')) {
-            // 테이블 헤더 생성 (처음이거나 새 검색)
-            TableManager.createHeader();
+        // 모바일에서는 카드 레이아웃, 데스크톱에서는 테이블 레이아웃
+        if (isMobile) {
+            TableManager.createMobileCardList();
+        } else {
+            if (!append || !document.querySelector('.results-table')) {
+                TableManager.createHeader();
+            }
+            TableManager.updateBody();
         }
-        
-        // 테이블 바디 업데이트
-        TableManager.updateBody();
     }
     
     static setupPagination() {
-        const paginationDiv = document.getElementById('pagination');
+        const isMobile = window.innerWidth <= 768;
+        const paginationDiv = isMobile ? 
+            document.getElementById('pagination-mobile') :
+            document.getElementById('pagination');
+        
         let html = '';
         
         if (STATE.nextPageToken) {
@@ -548,16 +594,72 @@ class YouTubeAnalyzer {
     }
 }
 
-// 전역 함수들 (HTML에서 호출하기 위해)
-function startSearch() {
+// ★★★ 전역 함수들 (HTML에서 호출하기 위해) - 이 부분이 중요합니다! ★★★
+window.startSearch = function() {
+    console.log('startSearch 함수 호출됨');
     YouTubeAnalyzer.startSearch();
-}
+};
 
-function resetFilters() {
+window.resetFilters = function() {
+    console.log('resetFilters 함수 호출됨');
     UIUtils.resetFilters();
-}
+};
+
+// 추가 전역 함수들
+window.switchTab = function(tabName) {
+    console.log('Switching to tab:', tabName);
+    
+    const isMobile = window.innerWidth <= 768;
+    const suffix = isMobile ? '-mobile' : '';
+    
+    // 모든 탭 버튼과 컨텐츠 비활성화
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+    
+    // 선택된 탭 활성화
+    const targetButton = document.querySelector(`[data-tab="${tabName}"]`);
+    const targetContent = document.getElementById(`${tabName}-tab${suffix}`);
+    
+    if (targetButton && targetContent) {
+        // 같은 data-tab을 가진 모든 버튼 활성화 (PC/모바일 동기화)
+        document.querySelectorAll(`[data-tab="${tabName}"]`).forEach(btn => {
+            btn.classList.add('active');
+        });
+        targetContent.classList.add('active');
+        console.log('Tab switched successfully');
+    } else {
+        console.error('Tab elements not found:', tabName);
+    }
+};
+
+window.toggleCard = function(header) {
+    const content = header.nextElementSibling;
+    const icon = header.querySelector('.collapse-icon');
+    
+    if (content.classList.contains('collapsed')) {
+        content.classList.remove('collapsed');
+        header.classList.remove('collapsed');
+        if (icon) icon.textContent = '▼';
+    } else {
+        content.classList.add('collapsed');
+        header.classList.add('collapsed');
+        if (icon) icon.textContent = '▶';
+    }
+};
 
 // DOM 로드 완료시 초기화
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM 로드 완료, 초기화 시작');
+    
+    // 전역 함수들이 정의되었는지 확인
+    console.log('startSearch 함수 존재:', typeof window.startSearch);
+    console.log('resetFilters 함수 존재:', typeof window.resetFilters);
+    console.log('switchTab 함수 존재:', typeof window.switchTab);
+    
     YouTubeAnalyzer.init();
+    
+    // 페이지 로드 후 기본 탭 설정
+    setTimeout(() => {
+        switchTab('search');
+    }, 100);
 });

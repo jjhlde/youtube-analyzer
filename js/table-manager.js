@@ -224,4 +224,51 @@ class TableManager {
             currentHeader.textContent = STATE.currentSort.direction === 'asc' ? '↑' : '↓';
         }
     }
+
+    // table-manager.js에 추가할 함수
+    static createMobileCardList() {
+        const resultsContent = document.getElementById('results-content');
+        let html = '<div class="mobile-card-container">';
+        
+        STATE.displayedVideos.forEach(video => {
+            const thumbnail = video.snippet.thumbnails?.medium?.url || video.snippet.thumbnails?.default?.url;
+            const duration = UIUtils.formatDuration(video.contentDetails?.duration);
+            const videoUrl = CONFIG.EXTERNAL_URLS.YOUTUBE_VIDEO + video.id;
+            const channelUrl = CONFIG.EXTERNAL_URLS.YOUTUBE_CHANNEL + video.channel.id;
+            
+            html += `
+                <div class="mobile-video-card" onclick="UIUtils.openVideo('${videoUrl}')">
+                    <div class="card-thumbnail">
+                        <img src="${thumbnail}" alt="썸네일" loading="lazy">
+                        <div class="card-duration">${duration}</div>
+                    </div>
+                    <div class="card-info">
+                        <div class="card-title">${video.snippet.title}</div>
+                        <div class="card-channel">${video.channel.snippet.title}</div>
+                        <div class="card-stats">
+                            <span>조회수 ${UIUtils.formatNumber(video.viewCount)}</span>
+                            <span>구독자 ${UIUtils.formatNumber(video.subscriberCount)}</span>
+                        </div>
+                        <div class="card-grades">
+                            <span class="grade-badge grade-${video.influenceGrade.grade}">${video.influenceGrade.text}</span>
+                            <span class="performance-score">${video.performanceScore.toFixed(1)}배</span>
+                        </div>
+                    </div>
+                    <button class="card-favorite" data-video-id="${video.id}" 
+                            onclick="event.stopPropagation(); FavoritesManager.isFavorite('${video.id}') ? FavoritesManager.removeFavorite('${video.id}') : FavoritesManager.addFavorite(STATE.displayedVideos.find(v => v.id === '${video.id}'))"
+                            style="background: rgba(255,255,255,0.9); border: none; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-size: 16px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+                        ${FavoritesManager.isFavorite(video.id) ? '⭐' : '☆'}
+                    </button>
+                </div>
+            `;
+        });
+        
+        html += '</div>';
+        resultsContent.innerHTML = html;
+        
+        // 즐겨찾기 버튼 상태 업데이트
+        FavoritesManager.updateFavoriteButtons();
+    }
+
 }
+

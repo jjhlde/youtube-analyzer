@@ -78,13 +78,34 @@ class DataProcessor {
     }
     
     static applyFilters(videos) {
-        const minInfluence = Number(document.getElementById('minInfluenceScore').value) || 0;
-        const minViews = Number(document.getElementById('minViewCount').value) || 0;
-        const maxViews = Number(document.getElementById('maxViewCount').value) || Infinity;
-        const minSubs = Number(document.getElementById('minSubscribers').value) || 0;
-        const maxSubs = Number(document.getElementById('maxSubscribers').value) || Infinity;
-        const durationType = document.getElementById('videoDuration').value;
-    
+        // 안전한 요소 접근을 위한 헬퍼 함수
+        const getElementValue = (id, defaultValue = 0) => {
+            const element = document.getElementById(id);
+            return element ? (Number(element.value) || defaultValue) : defaultValue;
+        };
+        
+        const getElementStringValue = (id, defaultValue = 'any') => {
+            const element = document.getElementById(id);
+            return element ? (element.value || defaultValue) : defaultValue;
+        };
+        
+        // 필터 값들을 안전하게 가져오기
+        const minInfluence = getElementValue('minInfluenceScore', 0);
+        const minViews = getElementValue('minViewCount', 0);
+        const maxViews = getElementValue('maxViewCount', Infinity);
+        const minSubs = getElementValue('minSubscribers', 0);
+        const maxSubs = getElementValue('maxSubscribers', Infinity);
+        const durationType = getElementStringValue('videoDuration', 'any');
+        
+        console.log('필터 적용:', {
+            minInfluence,
+            minViews,
+            maxViews,
+            minSubs,
+            maxSubs,
+            durationType
+        });
+
         return videos.filter(video => {
             const durationSec = UIUtils.parseDuration(video.contentDetails.duration);
             

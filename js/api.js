@@ -166,36 +166,44 @@ class YouTubeAPI {
     }
 }
 
-// 검색 파라미터 빌더
+// ★★★ 모바일 대응 추가된 검색 파라미터 빌더 ★★★
 class SearchParamsBuilder {
     static buildFromForm() {
-        const searchQuery = document.getElementById('searchQuery').value.trim();
+        // 모바일/PC 감지
+        const isMobile = window.innerWidth <= 768;
+        const suffix = isMobile ? 'Mobile' : '';
+        
+        const searchQuery = document.getElementById(`searchQuery${suffix}`).value.trim();
         
         if (!searchQuery) {
             throw new Error('검색어를 입력해주세요.');
         }
-        if (document.getElementById('videoDuration').value === 'longform') {
-            document.getElementById('videoDuration').value = 'any';  // API에는 보내지 않음
+        
+        // longform 처리
+        const videoDurationElement = document.getElementById(`videoDuration${suffix}`);
+        if (videoDurationElement && videoDurationElement.value === 'longform') {
+            videoDurationElement.value = 'any';  // API에는 보내지 않음
         }
+        
         const params = {
             q: searchQuery,
-            order: document.getElementById('orderBy').value,
-            maxResults: Math.min(100, Number(document.getElementById('maxResults').value) || 50),
-            regionCode: document.getElementById('regionCode').value || undefined,
-            videoDuration: document.getElementById('videoDuration').value
+            order: document.getElementById(`orderBy${suffix}`).value,
+            maxResults: Math.min(100, Number(document.getElementById(`maxResults${suffix}`).value) || 50),
+            regionCode: document.getElementById(`regionCode${suffix}`).value || undefined,
+            videoDuration: document.getElementById(`videoDuration${suffix}`).value
         };
         
         // 날짜 파라미터 처리
-        const publishedAfter = document.getElementById('publishedAfter').value;
-        const publishedBefore = document.getElementById('publishedBefore').value;
+        const publishedAfterElement = document.getElementById(`publishedAfter${suffix}`);
+        const publishedBeforeElement = document.getElementById(`publishedBefore${suffix}`);
         
-        if (publishedAfter) {
-            params.publishedAfter = new Date(publishedAfter).toISOString();
+        if (publishedAfterElement && publishedAfterElement.value) {
+            params.publishedAfter = new Date(publishedAfterElement.value).toISOString();
         }
         
-        if (publishedBefore) {
+        if (publishedBeforeElement && publishedBeforeElement.value) {
             // 종료일은 하루 끝 시간으로 설정 (23:59:59)
-            const endDate = new Date(publishedBefore);
+            const endDate = new Date(publishedBeforeElement.value);
             endDate.setHours(23, 59, 59, 999);
             params.publishedBefore = endDate.toISOString();
         }
