@@ -1466,3 +1466,34 @@ input:focus, select:focus, textarea:focus {
         text-align: center;
     }
 }
+
+/* 태블릿 반응형 */
+@media screen and (max-width: 768px) {
+    .main-container {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: 100%;
+        padding: 15px;
+        box-shadow: none;
+    }
+
+    .content-area {
+        padding: 15px;
+    }
+
+    .analysis-header {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+    }
+
+    .analysis-actions, .quick-actions {
+        flex-direction: column;
+    }
+
+    input, select, textarea, button {
+        font-size: 0.95em;
+    }
+}
