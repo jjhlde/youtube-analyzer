@@ -174,7 +174,9 @@ class SearchParamsBuilder {
         if (!searchQuery) {
             throw new Error('검색어를 입력해주세요.');
         }
-        
+        if (document.getElementById('videoDuration').value === 'longform') {
+            document.getElementById('videoDuration').value = 'any';  // API에는 보내지 않음
+        }
         const params = {
             q: searchQuery,
             order: document.getElementById('orderBy').value,

@@ -83,8 +83,15 @@ class DataProcessor {
         const maxViews = Number(document.getElementById('maxViewCount').value) || Infinity;
         const minSubs = Number(document.getElementById('minSubscribers').value) || 0;
         const maxSubs = Number(document.getElementById('maxSubscribers').value) || Infinity;
-        
+        const durationType = document.getElementById('videoDuration').value;
+    
         return videos.filter(video => {
+            const durationSec = UIUtils.parseDuration(video.contentDetails.duration);
+            
+            // durationType에 따라
+            if (durationType === 'short' && durationSec > 60) return false;
+            if (durationType === 'longform' && durationSec <= 60) return false;
+            
             return video.performanceScore >= minInfluence && 
                    video.viewCount >= minViews && 
                    video.viewCount <= maxViews &&
