@@ -1229,18 +1229,16 @@ input:focus, select:focus, textarea:focus {
 .pagination button {
     padding: 8px 12px;
     border: 1px solid #ddd;
-    background: white;
+    
     cursor: pointer;
     border-radius: 4px;
 }
 
-.pagination button:hover {
-    background: #f8f9fa;
-}
+
 
 .pagination button.active {
     background: #ff0000;
-    color: white;
+    
     border-color: #ff0000;
 }
 
