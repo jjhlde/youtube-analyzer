@@ -279,136 +279,289 @@ class YouTubeAnalyzer {
     }
     
     // ★★★ 새로운 함수 - 분석 HTML 생성 ★★★
-    static createAnalysisHTML(data) {
-        const { analyzedVideos, topTrendVideos, categoryStats, gapAnalysis } = data;
-        const isMobile = window.innerWidth <= 768;
-        const suffix = isMobile ? 'Mobile' : '';
-        
-        return `
-            <div class="analysis-results">
-                <div class="analysis-header">
-                    <h2>📊 키워드 분석 결과</h2>
-                    <div class="analysis-meta">
-                        <span>검색어: "${document.getElementById(`searchQuery${suffix}`).value}"</span>
+    // ★★★ 새로운 함수 - 고도화된 인사이트 HTML 생성 ★★★
+static createAnalysisHTML(data) {
+    const { analyzedVideos, topTrendVideos, categoryStats, gapAnalysis } = data;
+    const isMobile = window.innerWidth <= 768;
+    const suffix = isMobile ? 'Mobile' : '';
+    
+    // 인사이트 분석 수행
+    const insights = InsightAnalyzer.analyzeSearchResults(STATE.displayedVideos, document.getElementById(`searchQuery${suffix}`).value);
+    
+    return `
+        <div class="insight-dashboard">
+            <!-- 헤더 섹션 -->
+            <div class="insight-header">
+                <div class="insight-title">
+                    <h2>🧠 AI 마케팅 인사이트</h2>
+                    <span class="insight-keyword">"${document.getElementById(`searchQuery${suffix}`).value}"</span>
+                </div>
+                <div class="insight-summary">
+                    <div class="summary-score">
+                        <div class="score-circle score-${insights.opportunityGrade.toLowerCase()}">
+                            <span class="score-number">${insights.opportunityScore}</span>
+                            <span class="score-label">기회도</span>
+                        </div>
+                    </div>
+                    <div class="summary-metrics">
+                        <div class="metric-item">
+                            <span class="metric-value">${insights.marketSize}</span>
+                            <span class="metric-label">시장 규모</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-value">${insights.competitionLevel}</span>
+                            <span class="metric-label">경쟁 강도</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-value">${insights.trendDirection}</span>
+                            <span class="metric-label">트렌드</span>
+                        </div>
                     </div>
                 </div>
+            </div>
+
+            <!-- 메인 인사이트 그리드 -->
+            <div class="insight-grid">
                 
-                <!-- 기본 통계 요약 -->
-                <div class="analysis-accordion">
-                    <div class="accordion-item">
-                        <div class="accordion-header active" onclick="YouTubeAnalyzer.toggleAccordion(this)">
-                            <span class="accordion-icon">📈</span>
-                            <span class="accordion-title">기본 통계 요약</span>
-                            <span class="accordion-arrow">▼</span>
-                        </div>
-                        <div class="accordion-content active">
-                            <div class="stats-grid">
-                                <div class="stat-card">
-                                    <div class="stat-number">${STATE.displayedVideos.length}</div>
-                                    <div class="stat-label">총 영상 수</div>
+                <!-- 즉시 실행 가능한 콘텐츠 아이디어 -->
+                <div class="insight-card quick-wins">
+                    <div class="card-header">
+                        <span class="card-icon">⚡</span>
+                        <h3>즉시 실행 가능한 콘텐츠</h3>
+                        <span class="card-badge">${insights.contentIdeas.length}개</span>
+                    </div>
+                    <div class="card-content">
+                        ${insights.contentIdeas.map((idea, index) => `
+                            <div class="content-idea ${index === 0 ? 'featured' : ''}">
+                                <div class="idea-header">
+                                    <span class="idea-rank">#${index + 1}</span>
+                                    <span class="idea-difficulty difficulty-${idea.difficulty}">${idea.difficultyText}</span>
                                 </div>
-                                <div class="stat-card">
-                                    <div class="stat-number">${Math.round(STATE.displayedVideos.reduce((sum, v) => sum + v.viewCount, 0) / STATE.displayedVideos.length).toLocaleString()}</div>
-                                    <div class="stat-label">평균 조회수</div>
+                                <div class="idea-title">${idea.title}</div>
+                                <div class="idea-metrics">
+                                    <div class="metric">
+                                        <span class="metric-icon">👁️</span>
+                                        <span>예상 ${idea.expectedViews}</span>
+                                    </div>
+                                    <div class="metric">
+                                        <span class="metric-icon">⏱️</span>
+                                        <span>${idea.timeToCreate}</span>
+                                    </div>
+                                    <div class="metric">
+                                        <span class="metric-icon">💡</span>
+                                        <span>${idea.successProbability}% 성공률</span>
+                                    </div>
                                 </div>
-                                <div class="stat-card">
-                                    <div class="stat-number">${Math.round(STATE.displayedVideos.reduce((sum, v) => sum + v.subscriberCount, 0) / STATE.displayedVideos.length).toLocaleString()}</div>
-                                    <div class="stat-label">평균 구독자수</div>
-                                </div>
-                                <div class="stat-card">
-                                    <div class="stat-number">${(STATE.displayedVideos.reduce((sum, v) => sum + v.performanceScore, 0) / STATE.displayedVideos.length).toFixed(1)}배</div>
-                                    <div class="stat-label">평균 성과도</div>
+                                <div class="idea-reason">${idea.reason}</div>
+                                <div class="idea-actions">
+                                    <button class="action-btn primary" onclick="InsightAnalyzer.copyContentIdea('${idea.title}')">
+                                        📋 제목 복사
+                                    </button>
+                                    <button class="action-btn secondary" onclick="InsightAnalyzer.showSEOTips('${idea.id}')">
+                                        🎯 SEO 팁
+                                    </button>
                                 </div>
                             </div>
-                        </div>
+                        `).join('')}
                     </div>
-                    
-                    <!-- 떡상 가능성 TOP 5 -->
-                    <div class="accordion-item">
-                        <div class="accordion-header" onclick="YouTubeAnalyzer.toggleAccordion(this)">
-                            <span class="accordion-icon">🏆</span>
-                            <span class="accordion-title">떡상 가능성 TOP 5</span>
-                            <span class="accordion-arrow">▶</span>
-                        </div>
-                        <div class="accordion-content">
-                            <div class="trend-ranking">
-                                ${topTrendVideos.map((video, index) => {
-                                    const thumbnail = video.snippet.thumbnails?.medium?.url || video.snippet.thumbnails?.default?.url;
-                                    const videoUrl = `https://www.youtube.com/watch?v=${video.id}`;
-                                    return `
-                                        <div class="trend-item" onclick="window.open('${videoUrl}', '_blank')" style="cursor: pointer;">
-                                            <span class="rank">${index + 1}</span>
-                                            <img src="${thumbnail}" alt="썸네일" class="trend-thumbnail">
-                                            <div class="trend-info">
-                                                <div class="trend-title">${video.snippet.title.substring(0, 45)}...</div>
-                                                <div class="trend-score">떡상점수: ${video.trendScore.total.toFixed(1)}점</div>
-                                                <div class="trend-channel">${video.channel.snippet.title}</div>
-                                                <div class="trend-views">조회수: ${video.viewCount.toLocaleString()}회</div>
-                                            </div>
-                                            <span class="trend-total">${video.trendScore.total.toFixed(0)}점</span>
-                                        </div>
-                                    `;
-                                }).join('')}
+                </div>
+
+                <!-- 경쟁자 약점 분석 -->
+                <div class="insight-card competitor-analysis">
+                    <div class="card-header">
+                        <span class="card-icon">🔍</span>
+                        <h3>경쟁자 약점 발견</h3>
+                        <span class="card-badge">${insights.competitorWeaknesses.length}개</span>
+                    </div>
+                    <div class="card-content">
+                        ${insights.competitorWeaknesses.map(weakness => `
+                            <div class="weakness-item">
+                                <div class="weakness-header">
+                                    <span class="weakness-icon">${weakness.icon}</span>
+                                    <span class="weakness-title">${weakness.title}</span>
+                                    <span class="weakness-impact impact-${weakness.impact}">${weakness.impactText}</span>
+                                </div>
+                                <div class="weakness-description">${weakness.description}</div>
+                                <div class="weakness-opportunity">
+                                    <span class="opportunity-icon">💡</span>
+                                    <span>${weakness.opportunity}</span>
+                                </div>
                             </div>
-                        </div>
+                        `).join('')}
                     </div>
-                    
-                    <!-- 카테고리별 경쟁 현황 -->
-                    <div class="accordion-item">
-                        <div class="accordion-header" onclick="YouTubeAnalyzer.toggleAccordion(this)">
-                            <span class="accordion-icon">📊</span>
-                            <span class="accordion-title">카테고리별 경쟁 현황</span>
-                            <span class="accordion-arrow">▶</span>
-                        </div>
-                        <div class="accordion-content">
-                            <div class="category-stats">
-                                ${Object.entries(categoryStats).map(([category, stats]) => `
-                                    <div class="category-stat">
-                                        <span class="category-name">${category}</span>
-                                        <span class="category-count">${stats.count}개</span>
-                                        <span class="category-score">평균 ${stats.avgScore.toFixed(1)}점</span>
+                </div>
+
+                <!-- 브랜딩 전략 -->
+                <div class="insight-card branding-strategy">
+                    <div class="card-header">
+                        <span class="card-icon">🎨</span>
+                        <h3>브랜딩 전략</h3>
+                    </div>
+                    <div class="card-content">
+                        <div class="branding-section">
+                            <h4>📸 썸네일 전략</h4>
+                            <div class="thumbnail-insights">
+                                ${insights.thumbnailStrategy.map(tip => `
+                                    <div class="thumbnail-tip">
+                                        <span class="tip-icon">${tip.icon}</span>
+                                        <span class="tip-text">${tip.text}</span>
+                                        <span class="tip-impact">+${tip.impact}% CTR</span>
                                     </div>
                                 `).join('')}
                             </div>
                         </div>
-                    </div>
-                    
-                    <!-- 발견된 기회 -->
-                    <div class="accordion-item">
-                        <div class="accordion-header" onclick="YouTubeAnalyzer.toggleAccordion(this)">
-                            <span class="accordion-icon">🎯</span>
-                            <span class="accordion-title">발견된 기회</span>
-                            <span class="accordion-arrow">▶</span>
-                        </div>
-                        <div class="accordion-content">
-                            ${gapAnalysis.html}
-                        </div>
-                    </div>
-                    
-                    <!-- 추천 전략 -->
-                    <div class="accordion-item">
-                        <div class="accordion-header" onclick="YouTubeAnalyzer.toggleAccordion(this)">
-                            <span class="accordion-icon">💡</span>
-                            <span class="accordion-title">추천 전략</span>
-                            <span class="accordion-arrow">▶</span>
-                        </div>
-                        <div class="accordion-content">
-                            <div class="strategy-tips">
-                                <div class="tip-item">🎬 정보전달형: "${document.getElementById(`searchQuery${suffix}`).value} 완전정복" 시리즈</div>
-                                <div class="tip-item">📖 썰채널형: "${document.getElementById(`searchQuery${suffix}`).value}에 대한 충격적인 진실" 스타일</div>
-                                <div class="tip-item">👥 타겟팅: 50-70대 + 해당 주제에 관심있는 자녀 세대</div>
-                                <div class="tip-item">🎯 차별화: ${gapAnalysis.opportunities.length > 0 ? gapAnalysis.opportunities[0] : '고품질 콘텐츠로 승부'}</div>
+                        
+                        <div class="branding-section">
+                            <h4>📝 제목 최적화</h4>
+                            <div class="title-optimization">
+                                <div class="optimization-example">
+                                    <div class="before">
+                                        <span class="label">개선 전</span>
+                                        <span class="text">${insights.titleOptimization.before}</span>
+                                    </div>
+                                    <div class="arrow">→</div>
+                                    <div class="after">
+                                        <span class="label">개선 후</span>
+                                        <span class="text">${insights.titleOptimization.after}</span>
+                                    </div>
+                                </div>
+                                <div class="optimization-reasons">
+                                    ${insights.titleOptimization.reasons.map(reason => `
+                                        <span class="reason-tag">${reason}</span>
+                                    `).join('')}
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
+
+                <!-- SEO & 키워드 전략 -->
+                <div class="insight-card seo-strategy">
+                    <div class="card-header">
+                        <span class="card-icon">📈</span>
+                        <h3>SEO & 키워드 전략</h3>
+                    </div>
+                    <div class="card-content">
+                        <div class="keyword-clusters">
+                            <h4>🎯 추천 키워드 클러스터</h4>
+                            ${insights.keywordClusters.map(cluster => `
+                                <div class="keyword-cluster">
+                                    <div class="cluster-header">
+                                        <span class="cluster-name">${cluster.name}</span>
+                                        <span class="cluster-difficulty difficulty-${cluster.difficulty}">${cluster.difficultyText}</span>
+                                    </div>
+                                    <div class="cluster-keywords">
+                                        ${cluster.keywords.map(keyword => `
+                                            <span class="keyword-tag" data-volume="${keyword.volume}">
+                                                ${keyword.term}
+                                                <span class="keyword-volume">${keyword.volume}</span>
+                                            </span>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                        
+                        <div class="hashtag-suggestions">
+                            <h4>#️⃣ 추천 해시태그</h4>
+                            <div class="hashtag-list">
+                                ${insights.hashtags.map(tag => `
+                                    <span class="hashtag-item" onclick="InsightAnalyzer.copyHashtag('${tag.tag}')">
+                                        ${tag.tag}
+                                        <span class="hashtag-trend ${tag.trend}">${tag.trendIcon}</span>
+                                    </span>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 콘텐츠 로드맵 -->
+                <div class="insight-card content-roadmap">
+                    <div class="card-header">
+                        <span class="card-icon">🗺️</span>
+                        <h3>3개월 콘텐츠 로드맵</h3>
+                    </div>
+                    <div class="card-content">
+                        <div class="roadmap-timeline">
+                            ${insights.contentRoadmap.map((month, index) => `
+                                <div class="roadmap-month">
+                                    <div class="month-header">
+                                        <span class="month-number">${index + 1}</span>
+                                        <span class="month-name">${month.name}</span>
+                                        <span class="month-theme">${month.theme}</span>
+                                    </div>
+                                    <div class="month-content">
+                                        ${month.contents.map(content => `
+                                            <div class="content-item">
+                                                <span class="content-type">${content.type}</span>
+                                                <span class="content-title">${content.title}</span>
+                                                <span class="content-priority priority-${content.priority}">${content.priorityText}</span>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 수익화 전략 -->
+                <div class="insight-card monetization-strategy">
+                    <div class="card-header">
+                        <span class="card-icon">💰</span>
+                        <h3>수익화 전략</h3>
+                    </div>
+                    <div class="card-content">
+                        <div class="monetization-options">
+                            ${insights.monetizationStrategies.map(strategy => `
+                                <div class="monetization-item">
+                                    <div class="strategy-header">
+                                        <span class="strategy-icon">${strategy.icon}</span>
+                                        <span class="strategy-name">${strategy.name}</span>
+                                        <span class="strategy-potential">${strategy.potential}</span>
+                                    </div>
+                                    <div class="strategy-description">${strategy.description}</div>
+                                    <div class="strategy-timeline">구현 시기: ${strategy.timeline}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- 액션 센터 -->
+            <div class="action-center">
+                <h3>🚀 다음 액션</h3>
+                <div class="action-buttons">
+                    <button class="action-btn primary large" onclick="InsightAnalyzer.exportInsights()">
+                        📋 인사이트 보고서 다운로드
+                    </button>
+                    <button class="action-btn secondary large" onclick="InsightAnalyzer.scheduleContent()">
+                        📅 콘텐츠 일정 생성
+                    </button>
+                    <button class="action-btn tertiary large" onclick="InsightAnalyzer.shareInsights()">
+                        🔗 인사이트 공유
+                    </button>
+                </div>
                 
-                <div class="analysis-actions">
-                    <button class="analysis-btn" onclick="YouTubeAnalyzer.exportAnalysis()">📋 분석 결과 복사</button>
+                <div class="next-steps">
+                    <h4>추천 다음 단계:</h4>
+                    <ol class="next-steps-list">
+                        ${insights.nextSteps.map(step => `
+                            <li class="next-step">
+                                <span class="step-icon">${step.icon}</span>
+                                <span class="step-text">${step.text}</span>
+                                <span class="step-time">${step.timeEstimate}</span>
+                            </li>
+                        `).join('')}
+                    </ol>
                 </div>
             </div>
-        `;
-    }
+        </div>
+    `;
+}
     
     // 아코디언 토글 함수
     static toggleAccordion(header) {

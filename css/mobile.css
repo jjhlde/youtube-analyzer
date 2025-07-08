@@ -1,0 +1,586 @@
+/* ===============================
+   모바일 전용 스타일 (mobile.css)
+   =============================== */
+
+   @media screen and (max-width: 768px) {
+    
+      /* ========== 기본 레이아웃 변경 ========== */
+      
+      /* PC용 클래스 숨김 */
+      .sidebar {
+          display: none;
+      }
+      
+      .content-area {
+          display: none;
+      }
+      
+      /* 모바일용 클래스 표시 */
+      .control-panel {
+          display: flex;
+      }
+      
+      .results-area {
+          display: block;
+      }
+      
+      /* 기본 레이아웃을 세로형으로 변경 */
+      .main-container {
+          flex-direction: column;
+          height: 100vh;
+          overflow: hidden;
+      }
+  
+      /* ========== 상단 제어 패널 ========== */
+      .control-panel {
+          background: var(--bg-light);
+          padding: var(--spacing-md);
+          box-shadow: var(--shadow-md);
+          max-height: 50vh; /* 화면의 50% 이하로 제한 */
+          overflow-y: auto;
+          flex-direction: column;
+      }
+  
+      /* ========== 하단 결과 영역 ========== */
+      .results-area {
+          flex: 1;
+          padding: var(--spacing-md);
+          overflow-y: auto;
+          background: var(--gray-50);
+      }
+  
+      /* ========== 탭 네비게이션 모바일 최적화 ========== */
+      .tab-navigation {
+          margin-bottom: var(--spacing-md);
+          gap: var(--spacing-xs);
+          padding-left: 0;
+      }
+  
+      .tab-btn {
+          flex: 1;
+          padding: var(--spacing-sm) var(--spacing-sm);
+          font-size: var(--font-base);
+          min-height: 45px;
+      }
+  
+      .tab-icon {
+          font-size: var(--font-lg);
+      }
+  
+      .tab-text {
+          font-size: var(--font-sm);
+      }
+  
+      /* ========== 탭 컨텐츠 최적화 ========== */
+      .tab-content-wrapper {
+          max-height: 30vh; /* 높이 제한 */
+          overflow-y: auto;
+          margin-bottom: var(--spacing-md);
+          padding: var(--spacing-sm);
+      }
+  
+      /* ========== 메인 검색창 ========== */
+      .main-search-input {
+          font-size: var(--font-lg);
+          padding: var(--spacing-md);
+      }
+  
+      /* ========== 설정 카드 최적화 ========== */
+      .setting-card {
+          margin-bottom: var(--spacing-sm);
+          border-radius: var(--radius-md);
+      }
+  
+      .card__header {
+          padding: var(--spacing-sm) var(--spacing-md);
+          font-size: var(--font-md);
+      }
+  
+      .card__content {
+          padding: var(--spacing-md);
+      }
+  
+      /* ========== 모바일용 설정 그리드 ========== */
+      .setting-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: var(--spacing-sm);
+      }
+  
+      .setting-item label {
+          font-size: var(--font-sm);
+      }
+  
+      .input--compact {
+          padding: var(--spacing-sm) 6px;
+          font-size: var(--font-base);
+          border-radius: var(--radius-sm);
+      }
+  
+      /* ========== 날짜 범위 모바일 ========== */
+      .date-range-mobile {
+          display: flex;
+          align-items: center;
+          gap: var(--spacing-xs);
+      }
+  
+      .date-range-mobile input {
+          flex: 1;
+      }
+  
+      .date-range-mobile span {
+          color: var(--gray-500);
+          font-weight: var(--font-semibold);
+      }
+  
+      /* ========== 키워드 도우미 모바일 최적화 ========== */
+      .category-buttons {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 6px;
+          margin-bottom: var(--spacing-sm);
+      }
+  
+      .category-btn {
+          padding: var(--spacing-sm) var(--spacing-xs);
+          font-size: var(--font-xs);
+          text-align: center;
+          min-height: 40px;
+      }
+  
+      .keyword-suggestions {
+          max-height: 120px;
+          overflow-y: auto;
+          margin-bottom: var(--spacing-sm);
+          padding: var(--spacing-sm);
+      }
+  
+      .keyword-tag {
+          font-size: var(--font-xs);
+          padding: 3px 6px;
+          margin: 2px;
+      }
+  
+      .quick-actions {
+          display: flex;
+          gap: var(--spacing-sm);
+      }
+  
+      .helper-btn {
+          flex: 1;
+          padding: var(--spacing-sm);
+          font-size: var(--font-sm);
+      }
+  
+      /* ========== 제어 패널 하단 버튼 ========== */
+      .control-footer {
+          display: flex;
+          gap: var(--spacing-sm);
+          padding-top: var(--spacing-sm);
+          border-top: var(--border-width) solid var(--border-color);
+          flex-shrink: 0;
+      }
+  
+      .control-footer .search-btn {
+          flex: 2;
+          padding: var(--spacing-md) var(--spacing-md);
+          border: none;
+          border-radius: var(--radius-lg);
+          background: var(--success-gradient);
+          color: var(--bg-white);
+          font-weight: var(--font-semibold);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+          font-size: var(--font-md);
+      }
+  
+      .control-footer .action-btn {
+          flex: 1;
+          padding: var(--spacing-sm) var(--spacing-sm);
+          border: none;
+          border-radius: var(--radius-lg);
+          color: var(--bg-white);
+          font-weight: var(--font-semibold);
+          font-size: var(--font-sm);
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 2px;
+      }
+  
+      .control-footer .favorites-btn {
+          background: var(--warning-gradient);
+          color: var(--gray-800);
+      }
+  
+      .control-footer .reset-btn {
+          background: linear-gradient(135deg, var(--gray-500) 0%, var(--gray-600) 100%);
+      }
+  
+      .control-footer .btn-icon {
+          font-size: var(--font-lg);
+      }
+  
+      /* ========== 결과 영역 최적화 ========== */
+      .results-container {
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+          padding: var(--spacing-md);
+          background: var(--bg-white);
+          border-radius: var(--radius-lg);
+          box-shadow: var(--shadow-md);
+          min-height: auto;
+      }
+  
+      .results-header {
+          margin-bottom: var(--spacing-md);
+          padding-bottom: var(--spacing-sm);
+          border-bottom: var(--border-width) solid var(--border-color);
+          flex-shrink: 0;
+      }
+  
+      .results-header h3 {
+          font-size: var(--font-xl);
+          margin: 0;
+      }
+  
+      #results-count,
+      #results-count-mobile {
+          font-size: var(--font-base);
+          color: var(--gray-500);
+          margin-top: var(--spacing-xs);
+      }
+  
+      #results-content,
+      #results-content-mobile {
+          flex: 1;
+          overflow-y: auto;
+          -webkit-overflow-scrolling: touch; /* iOS 부드러운 스크롤 */
+      }
+  
+      /* ========== 모바일용 카드 레이아웃 ========== */
+      .mobile-card-container {
+          display: flex;
+          flex-direction: column;
+          gap: var(--spacing-md);
+          padding-bottom: var(--spacing-lg); /* 하단 여백 추가 */
+      }
+  
+      .mobile-video-card {
+          display: flex;
+          background: var(--bg-white);
+          border-radius: var(--radius-lg);
+          overflow: hidden;
+          box-shadow: var(--shadow-md);
+          cursor: pointer;
+          transition: all var(--transition-normal);
+          position: relative;
+      }
+  
+      .mobile-video-card:hover {
+          transform: translateY(-2px);
+          box-shadow: var(--shadow-lg);
+      }
+  
+      .card-thumbnail {
+          position: relative;
+          flex-shrink: 0;
+          width: 120px;
+          height: 90px;
+      }
+  
+      .card-thumbnail img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+      }
+  
+      .card-duration {
+          position: absolute;
+          bottom: 4px;
+          right: 4px;
+          background: var(--bg-dark);
+          color: var(--bg-white);
+          padding: 2px 4px;
+          border-radius: var(--radius-sm);
+          font-size: var(--font-xs);
+          font-weight: var(--font-bold);
+      }
+  
+      .card-info {
+          flex: 1;
+          padding: var(--spacing-md);
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+      }
+  
+      .card-title {
+          font-size: var(--font-md);
+          font-weight: var(--font-semibold);
+          color: var(--gray-700);
+          line-height: var(--line-height-tight);
+          margin-bottom: var(--spacing-sm);
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+      }
+  
+      .card-channel {
+          font-size: var(--font-sm);
+          color: var(--gray-500);
+          margin-bottom: var(--spacing-sm);
+      }
+  
+      .card-stats {
+          font-size: var(--font-xs);
+          color: var(--gray-400);
+          margin-bottom: var(--spacing-sm);
+      }
+  
+      .card-stats span {
+          margin-right: var(--spacing-sm);
+      }
+  
+      .card-grades {
+          display: flex;
+          align-items: center;
+          gap: var(--spacing-sm);
+      }
+  
+      .grade-badge {
+          font-size: 9px;
+          padding: 2px 6px;
+          border-radius: var(--radius-xl);
+          color: var(--bg-white);
+          font-weight: var(--font-bold);
+      }
+  
+      .performance-score {
+          font-size: var(--font-xs);
+          color: #007bff;
+          font-weight: var(--font-semibold);
+      }
+  
+      .card-favorite {
+          position: absolute;
+          top: var(--spacing-sm);
+          right: var(--spacing-sm);
+          background: rgba(255,255,255,0.9);
+          border: none;
+          border-radius: var(--radius-round);
+          width: 30px;
+          height: 30px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: var(--font-xl);
+          cursor: pointer;
+          box-shadow: var(--shadow-sm);
+      }
+  
+      /* ========== 기존 테이블 숨기기 ========== */
+      .results-table {
+          display: none;
+      }
+  
+      /* ========== 즐겨찾기 모달 모바일 최적화 ========== */
+      .favorites-content {
+          width: 95%;
+          max-height: 85vh;
+      }
+  
+      .favorites-header h2 {
+          font-size: var(--font-xl);
+      }
+  
+      .favorite-item {
+          flex-direction: column;
+          gap: var(--spacing-sm);
+      }
+  
+      .favorite-thumbnail {
+          width: 100%;
+          height: auto;
+          max-width: 200px;
+          align-self: center;
+      }
+  
+      .favorite-actions {
+          flex-direction: row;
+          justify-content: space-between;
+      }
+  
+      /* ========== 채널 분석 모바일 최적화 ========== */
+      .analyze-channel-btn {
+          padding: var(--spacing-md);
+          font-size: var(--font-base);
+          margin-top: var(--spacing-sm);
+      }
+      
+      .channel-summary {
+          flex-direction: column;
+          text-align: center;
+          gap: var(--spacing-sm);
+      }
+      
+      .channel-metrics {
+          justify-content: center;
+          gap: var(--spacing-md);
+      }
+      
+      .metric {
+          padding: 6px var(--spacing-sm);
+      }
+      
+      .channel-thumbnail {
+          width: 60px;
+          height: 60px;
+      }
+      
+      .channel-name {
+          font-size: var(--font-xl);
+      }
+      
+      /* 즐겨찾기 채널 (모바일) */
+      .favorite-channel-item {
+          padding: var(--spacing-sm);
+          gap: var(--spacing-sm);
+      }
+      
+      .favorite-channel-thumbnail {
+          width: 35px;
+          height: 35px;
+      }
+      
+      .favorite-channel-title {
+          font-size: var(--font-base);
+      }
+      
+      .favorite-channel-stats {
+          font-size: var(--font-xs);
+      }
+      
+      /* 무한 스크롤 컨트롤 (모바일) */
+      .pagination-controls {
+          flex-direction: column;
+          gap: var(--spacing-sm);
+      }
+      
+      .scroll-toggle-btn,
+      .next-page-btn {
+          width: 100%;
+          padding: var(--spacing-sm);
+      }
+  
+      /* ========== 인사이트 대시보드 모바일 최적화 ========== */
+      .insight-dashboard {
+          padding: var(--spacing-sm);
+      }
+      
+      .insight-header {
+          padding: var(--spacing-lg);
+          margin-bottom: var(--spacing-lg);
+      }
+      
+      .insight-title {
+          flex-direction: column;
+          gap: var(--spacing-sm);
+          align-items: flex-start;
+      }
+      
+      .insight-summary {
+          grid-template-columns: 1fr;
+          gap: var(--spacing-lg);
+          text-align: center;
+      }
+      
+      .summary-metrics {
+          grid-template-columns: 1fr;
+          gap: var(--spacing-md);
+      }
+      
+      .insight-grid {
+          grid-template-columns: 1fr;
+          gap: var(--spacing-md);
+      }
+      
+      .card-content {
+          padding: var(--spacing-lg);
+      }
+      
+      .idea-metrics {
+          flex-direction: column;
+          gap: var(--spacing-sm);
+      }
+      
+      .optimization-example {
+          flex-direction: column;
+          gap: var(--spacing-sm);
+      }
+      
+      .arrow {
+          transform: rotate(90deg);
+      }
+      
+      .action-buttons {
+          flex-direction: column;
+      }
+      
+      .action-btn.large {
+          min-width: auto;
+      }
+  }
+  
+  /* ========== 초소형 모바일 (360px 이하) ========== */
+  @media screen and (max-width: 360px) {
+      
+      .control-panel {
+          padding: var(--spacing-sm);
+          max-height: 45vh;
+      }
+  
+      .tab-btn {
+          padding: var(--spacing-sm) var(--spacing-xs);
+          min-height: 40px;
+      }
+  
+      .tab-text {
+          font-size: var(--font-xs);
+      }
+  
+      .category-buttons {
+          grid-template-columns: repeat(2, 1fr);
+      }
+  
+      .category-btn {
+          font-size: 9px;
+          padding: 6px 2px;
+      }
+  
+      .main-search-input {
+          font-size: var(--font-md);
+          padding: var(--spacing-sm);
+      }
+  
+      .mobile-video-card {
+          flex-direction: column;
+      }
+  
+      .card-thumbnail {
+          width: 100%;
+          height: 120px;
+      }
+  
+      .card-favorite {
+          top: var(--spacing-xs);
+          right: var(--spacing-xs);
+          width: 25px;
+          height: 25px;
+          font-size: var(--font-lg);
+      }
+  }

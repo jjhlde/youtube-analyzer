@@ -1,0 +1,414 @@
+/* ===============================
+   기본 스타일 + 공통 컴포넌트 (base.css)
+   =============================== */
+
+/* ========== 기본 리셋 ========== */
+* {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+  }
+  
+  body {
+      font-family: var(--font-family);
+      background: var(--primary-gradient);
+      min-height: 100vh;
+      font-size: var(--font-base);
+      line-height: var(--line-height-normal);
+      color: var(--gray-700);
+  }
+  
+  /* ========== 공통 유틸리티 클래스 ========== */
+  .loading {
+      text-align: center;
+      padding: var(--spacing-2xl);
+      color: var(--gray-500);
+      font-size: var(--font-xl);
+  }
+  
+  .error {
+      background: #ffe6e6;
+      color: #cc0000;
+      padding: var(--spacing-md);
+      border-radius: var(--radius-md);
+      border-left: 4px solid #ff4444;
+  }
+  
+  /* ========== 버튼 시스템 ========== */
+  .btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--spacing-sm);
+      padding: var(--padding-md);
+      border: none;
+      border-radius: var(--radius-lg);
+      cursor: pointer;
+      font-size: var(--font-lg);
+      font-weight: var(--font-semibold);
+      transition: all var(--transition-normal);
+      text-decoration: none;
+      border: var(--border-width-thick) solid transparent;
+  }
+  
+  .btn:hover {
+      transform: translateY(-1px);
+  }
+  
+  .btn:active {
+      transform: translateY(0);
+  }
+  
+  /* 버튼 변형들 */
+  .btn--primary {
+      background: var(--primary-gradient);
+      color: var(--bg-white);
+      border-color: var(--primary-color);
+  }
+  
+  .btn--primary:hover {
+      background: var(--primary-gradient-hover);
+      box-shadow: var(--shadow-primary);
+  }
+  
+  .btn--success {
+      background: var(--success-gradient);
+      color: var(--bg-white);
+      border-color: var(--success-color);
+  }
+  
+  .btn--success:hover {
+      box-shadow: var(--shadow-success);
+  }
+  
+  .btn--warning {
+      background: var(--warning-gradient);
+      color: var(--gray-800);
+      border-color: var(--warning-color);
+  }
+  
+  .btn--warning:hover {
+      box-shadow: var(--shadow-warning);
+  }
+  
+  .btn--danger {
+      background: var(--danger-gradient);
+      color: var(--bg-white);
+      border-color: var(--danger-color);
+  }
+  
+  .btn--danger:hover {
+      box-shadow: var(--shadow-danger);
+  }
+  
+  .btn--info {
+      background: var(--info-gradient);
+      color: var(--bg-white);
+      border-color: var(--info-color);
+  }
+  
+  .btn--secondary {
+      background: linear-gradient(135deg, var(--gray-500) 0%, var(--gray-600) 100%);
+      color: var(--bg-white);
+      border-color: var(--gray-600);
+  }
+  
+  .btn--secondary:hover {
+      background: linear-gradient(135deg, var(--gray-600) 0%, var(--gray-700) 100%);
+      box-shadow: 0 4px 12px rgba(108, 117, 125, 0.4);
+  }
+  
+  /* 버튼 크기 */
+  .btn--sm {
+      padding: var(--padding-sm);
+      font-size: var(--font-sm);
+  }
+  
+  .btn--lg {
+      padding: var(--padding-lg);
+      font-size: var(--font-xl);
+  }
+  
+  .btn--full {
+      width: 100%;
+  }
+  
+  /* ========== 카드 시스템 ========== */
+  .card {
+      background: var(--bg-light);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-md);
+      border: var(--border-width) solid var(--border-color);
+      overflow: hidden;
+      transition: all var(--transition-normal);
+  }
+  
+  .card:hover {
+      box-shadow: var(--shadow-lg);
+  }
+  
+  .card__header {
+      padding: var(--padding-md);
+      background: var(--gray-100);
+      border-bottom: var(--border-width) solid var(--border-color);
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+      cursor: pointer;
+      transition: background var(--transition-normal);
+  }
+  
+  .card__header:hover {
+      background: var(--gray-200);
+  }
+  
+  .card__header--primary {
+      background: var(--primary-color);
+      color: var(--bg-white);
+  }
+  
+  .card__header--primary:hover {
+      background: var(--primary-color);
+  }
+  
+  .card__header--collapsed {
+      border-radius: var(--radius-lg);
+  }
+  
+  .card__icon {
+      font-size: var(--font-xl);
+      flex-shrink: 0;
+  }
+  
+  .card__title {
+      font-size: var(--font-lg);
+      font-weight: var(--font-semibold);
+      color: var(--gray-700);
+      flex: 1;
+  }
+  
+  .card__header--primary .card__title {
+      color: var(--bg-white);
+  }
+  
+  .card__collapse-icon {
+      margin-left: auto;
+      transition: transform var(--transition-normal);
+      flex-shrink: 0;
+  }
+  
+  .card__header--collapsed .card__collapse-icon {
+      transform: rotate(-90deg);
+  }
+  
+  .card__content {
+      padding: var(--spacing-md);
+  }
+  
+  .card__content--collapsed {
+      display: none;
+  }
+  
+  /* ========== 입력 요소 시스템 ========== */
+  input, select, textarea {
+      width: 100%;
+      padding: var(--spacing-sm);
+      border: var(--border-width-thick) solid var(--border-color);
+      border-radius: var(--radius-md);
+      font-size: var(--font-md);
+      font-family: var(--font-family);
+      transition: border-color var(--transition-normal);
+  }
+  
+  input:focus, select:focus, textarea:focus {
+      border-color: var(--primary-color);
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  }
+  
+  .input--compact {
+      padding: 6px 8px;
+      font-size: var(--font-base);
+      border-radius: var(--radius-sm);
+  }
+  
+  label {
+      display: block;
+      font-weight: var(--font-semibold);
+      color: var(--gray-700);
+      margin-bottom: var(--spacing-xs);
+      font-size: var(--font-md);
+  }
+  
+  /* ========== 그리드 시스템 ========== */
+  .grid {
+      display: grid;
+      gap: var(--spacing-md);
+  }
+  
+  .grid--2 {
+      grid-template-columns: 1fr 1fr;
+  }
+  
+  .grid--3 {
+      grid-template-columns: repeat(3, 1fr);
+  }
+  
+  .grid--auto {
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+  
+  /* ========== 등급 표시 시스템 ========== */
+  .grade {
+      font-weight: var(--font-bold);
+      padding: 6px 12px;
+      border-radius: 15px;
+      font-size: var(--font-base);
+      color: var(--bg-white);
+      display: inline-block;
+  }
+  
+  .grade--great { background: var(--grade-great); }
+  .grade--good { background: var(--grade-good); }
+  .grade--normal { background: var(--grade-normal); color: var(--gray-700); }
+  .grade--bad { background: var(--grade-bad); }
+  .grade--worst { background: var(--grade-worst); }
+  
+  /* ========== 툴팁 시스템 ========== */
+  .tooltip {
+      position: relative;
+      cursor: help;
+  }
+  
+  .tooltip__content {
+      visibility: hidden;
+      width: 280px;
+      background-color: var(--gray-700);
+      color: var(--bg-white);
+      text-align: left;
+      border-radius: var(--radius-md);
+      padding: var(--spacing-md);
+      position: absolute;
+      z-index: var(--z-tooltip);
+      top: 125%;
+      left: 50%;
+      margin-left: -140px;
+      opacity: 0;
+      transition: opacity var(--transition-slow);
+      font-size: var(--font-base);
+      line-height: var(--line-height-normal);
+      box-shadow: var(--shadow-lg);
+  }
+  
+  .tooltip__content::after {
+      content: "";
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      margin-left: -5px;
+      border-width: 5px;
+      border-style: solid;
+      border-color: transparent transparent var(--gray-700) transparent;
+  }
+  
+  .tooltip:hover .tooltip__content {
+      visibility: visible;
+      opacity: 1;
+  }
+  
+  .tooltip__grade {
+      margin: 3px 0;
+      padding: var(--spacing-xs) 6px;
+      border-radius: var(--radius-xl);
+      font-size: var(--font-xs);
+      font-weight: var(--font-bold);
+      display: inline-block;
+      color: var(--bg-white);
+  }
+  
+  /* ========== 알림 시스템 ========== */
+  .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: var(--padding-md);
+      border-radius: var(--radius-lg);
+      color: var(--bg-white);
+      font-weight: var(--font-semibold);
+      z-index: var(--z-modal);
+      animation: slideInRight var(--transition-slow);
+      max-width: 400px;
+  }
+  
+  .notification--success { background: var(--success-color); }
+  .notification--warning { background: var(--warning-color); color: var(--gray-800); }
+  .notification--info { background: var(--info-color); }
+  .notification--error { background: var(--danger-color); }
+  
+  @keyframes slideInRight {
+      from { transform: translateX(100%); }
+      to { transform: translateX(0); }
+  }
+  
+  @keyframes slideOutRight {
+      from { transform: translateX(0); }
+      to { transform: translateX(100%); }
+  }
+  
+  @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+  }
+  
+  /* ========== 로딩 스피너 ========== */
+  .loading-spinner {
+      width: 30px;
+      height: 30px;
+      border: 3px solid var(--gray-200);
+      border-top: 3px solid var(--primary-color);
+      border-radius: var(--radius-round);
+      animation: spin 1s linear infinite;
+      margin: 0 auto var(--spacing-sm) auto;
+  }
+  
+  @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+  }
+  
+  /* ========== 범용 헬퍼 클래스 ========== */
+  .text-center { text-align: center; }
+  .text-left { text-align: left; }
+  .text-right { text-align: right; }
+  
+  .flex { display: flex; }
+  .flex-center { display: flex; align-items: center; justify-content: center; }
+  .flex-between { display: flex; align-items: center; justify-content: space-between; }
+  .flex-col { flex-direction: column; }
+  .flex-wrap { flex-wrap: wrap; }
+  
+  .gap-xs { gap: var(--spacing-xs); }
+  .gap-sm { gap: var(--spacing-sm); }
+  .gap-md { gap: var(--spacing-md); }
+  .gap-lg { gap: var(--spacing-lg); }
+  
+  .m-auto { margin: auto; }
+  .mb-sm { margin-bottom: var(--spacing-sm); }
+  .mb-md { margin-bottom: var(--spacing-md); }
+  .mb-lg { margin-bottom: var(--spacing-lg); }
+  
+  .p-sm { padding: var(--spacing-sm); }
+  .p-md { padding: var(--spacing-md); }
+  .p-lg { padding: var(--spacing-lg); }
+  
+  .w-full { width: 100%; }
+  .h-full { height: 100%; }
+  
+  .shadow { box-shadow: var(--shadow-md); }
+  .shadow-lg { box-shadow: var(--shadow-lg); }
+  
+  .rounded { border-radius: var(--radius-md); }
+  .rounded-lg { border-radius: var(--radius-lg); }
+  
+  .hidden { display: none; }
+  .visible { display: block; }
