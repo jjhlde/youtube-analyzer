@@ -41,10 +41,13 @@ class ChannelAnalyzer {
               UIUtils.showLoading('채널 정보를 가져오는 중...');
               
               // 채널 ID 추출
-              const channelId = this.extractChannelId(channelUrl);
-              if (!channelId) {
-                  throw new Error('올바른 채널 URL을 입력해주세요.');
-              }
+             
+            const channelId = this.extractChannelId(channelUrl);
+            console.log('추출된 채널 ID:', channelId);
+
+            if (!channelId) {
+            throw new Error('올바른 채널 URL을 입력해주세요. 예: https://www.youtube.com/@channelname 또는 채널명만 입력하세요.');
+            }
               
               // 채널 정보 가져오기
               const channelInfo = await this.getChannelInfo(channelId);
@@ -70,23 +73,47 @@ class ChannelAnalyzer {
       }
       
       // 채널 ID 추출
+      // 채널 ID 추출
       extractChannelId(url) {
-          // 다양한 형태의 채널 URL 지원
-          const patterns = [
-              /youtube\.com\/channel\/([a-zA-Z0-9_-]+)/,
-              /youtube\.com\/c\/([a-zA-Z0-9_-]+)/,
-              /youtube\.com\/@([a-zA-Z0-9_-]+)/,
-              /youtube\.com\/user\/([a-zA-Z0-9_-]+)/
-          ];
-          
-          for (const pattern of patterns) {
-              const match = url.match(pattern);
-              if (match) {
+            console.log('입력된 URL:', url);
+            
+            // URL 정리 (여분의 파라미터 제거)
+            const cleanUrl = url.split('?')[0].split('#')[0];
+            console.log('정리된 URL:', cleanUrl);
+            
+            // 다양한 형태의 채널 URL 지원
+            const patterns = [
+            // @핸들 방식 (http/https 모두 지원)
+            /(?:https?:\/\/)?(?:www\.)?youtube\.com\/@([a-zA-Z0-9_.-]+)/,
+            // 채널 ID 방식
+            /(?:https?:\/\/)?(?:www\.)?youtube\.com\/channel\/([a-zA-Z0-9_-]+)/,
+            // 커스텀 URL 방식
+            /(?:https?:\/\/)?(?:www\.)?youtube\.com\/c\/([a-zA-Z0-9_.-]+)/,
+            // 사용자명 방식 (구형)
+            /(?:https?:\/\/)?(?:www\.)?youtube\.com\/user\/([a-zA-Z0-9_.-]+)/,
+            // 짧은 URL 형태도 지원
+            /(?:https?:\/\/)?youtu\.be\/channel\/([a-zA-Z0-9_-]+)/
+            ];
+            
+            for (let i = 0; i < patterns.length; i++) {
+            const pattern = patterns[i];
+            const match = cleanUrl.match(pattern);
+            if (match) {
+                  console.log(`✅ 패턴 ${i+1} 매칭 성공:`, pattern, '→ 결과:', match[1]);
                   return match[1];
-              }
-          }
-          
-          return null;
+            }
+            }
+            
+            // 패턴이 없으면 입력값에서 URL 부분 제거 후 반환 (채널명 검색 시도)
+            const cleanChannelName = url.replace(/(?:https?:\/\/)?(?:www\.)?youtube\.com\//, '').trim();
+            console.log('❌ 패턴 매칭 실패, 채널명으로 검색 시도:', cleanChannelName);
+            
+            // 빈 문자열이면 null 반환
+            if (!cleanChannelName) {
+            return null;
+            }
+            
+            return cleanChannelName;
       }
       
       // 채널 정보 가져오기

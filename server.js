@@ -12,7 +12,13 @@ app.use(cors());
 app.use(express.json());
 
 // ★★★ API 엔드포인트들을 먼저 정의 ★★★
+// 정적 파일 서빙 (HTML, CSS, JS 파일들)
+app.use(express.static(path.join(__dirname)));
 
+// 루트 경로에서 index.html 제공
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
 
 
 // ★★★ 전체 유튜브 검색 API (디버깅 강화) ★★★
@@ -263,6 +269,7 @@ app.get('/api/channel-info', async (req, res) => {
             console.log('채널 ID로 검색:', channelId);
         } else {
             // 커스텀 URL이나 기타 형태인 경우 검색으로 시도
+            console.log('검색으로 채널 찾기 시도:', channelId);
             const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=channel&q=${encodeURIComponent(channelId)}&maxResults=1&key=${apiKey}`;
             
             const fetch = (await import('node-fetch')).default;
@@ -270,15 +277,22 @@ app.get('/api/channel-info', async (req, res) => {
             
             if (searchResponse.ok) {
                 const searchData = await searchResponse.json();
+                console.log('검색 결과:', searchData);
                 if (searchData.items && searchData.items.length > 0) {
                     const foundChannelId = searchData.items[0].snippet.channelId;
                     apiUrl = `https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics,contentDetails&id=${foundChannelId}&key=${apiKey}`;
                     console.log('검색으로 찾은 채널 ID:', foundChannelId);
                 } else {
-                    return res.status(404).json({ error: '채널을 찾을 수 없습니다.' });
+                    return res.status(404).json({ 
+                        error: '채널을 찾을 수 없습니다. URL을 다시 확인해주세요.',
+                        suggestion: '예시: https://www.youtube.com/@channelname 또는 정확한 채널명'
+                    });
                 }
             } else {
-                return res.status(400).json({ error: '올바르지 않은 채널 식별자입니다.' });
+                return res.status(400).json({ 
+                    error: '올바르지 않은 채널 식별자입니다.',
+                    suggestion: 'URL 형태를 확인해주세요.'
+                });
             }
         }
         
