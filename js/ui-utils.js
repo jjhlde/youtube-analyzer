@@ -164,6 +164,17 @@ class UIUtils {
             countElement.textContent = `${count}개 영상 발견`;
         }
     }
+    // 새로운 함수 추가
+    static updateCurrentDisplayCount(count) {
+        const isMobile = window.innerWidth <= 768;
+        const countElement = isMobile ? 
+            document.getElementById('results-count-mobile') :
+            document.getElementById('results-count');
+            
+        if (countElement) {
+            countElement.textContent = `검색결과 : ${count}개`;
+        }
+    }
     
     // ★★★ 새로운 함수 - 알림 표시 ★★★
     static showNotification(message, type = 'success') {

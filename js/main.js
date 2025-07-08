@@ -470,9 +470,14 @@ class YouTubeAnalyzer {
         });
     }
     
-    // ★★★ 필터 값 유지 기능이 포함된 검색 함수 ★★★
     static async searchVideos(pageToken = '') {
         try {
+            // ★★★ 채널 모드 체크 ★★★
+            if (STATE.isChannelMode && pageToken) {
+                // 채널 모드에서 추가 페이지 로딩
+                return await this.loadMoreChannelVideos(pageToken);
+            }
+            
             // 첫 번째 검색이면 현재 필터 저장
             if (!pageToken) {
                 this.currentFilters = SearchParamsBuilder.buildFromForm();
@@ -481,7 +486,7 @@ class YouTubeAnalyzer {
                 this.initializeResultTabs();
             }
             
-            // 저장된 필터 사용 (pageToken이 있으면 다음 페이지)
+            // 기존 일반 검색 로직 그대로...
             const searchParams = this.currentFilters || SearchParamsBuilder.buildFromForm();
             
             console.log('검색 시작:', searchParams, 'pageToken:', pageToken);
@@ -547,6 +552,39 @@ class YouTubeAnalyzer {
             }
             
             UIUtils.showError(errorMessage);
+        }
+    }
+    // ★★★ 채널 영상 추가 로딩 메서드 ★★★
+    static async loadMoreChannelVideos(pageToken) {
+        try {
+            console.log('채널 영상 추가 로딩:', STATE.currentChannelId, pageToken);
+            
+            // 채널 영상 추가 가져오기
+            const videos = await channelAnalyzer.getChannelVideos(STATE.currentChannelId, pageToken);
+            
+            if (!videos || videos.length === 0) {
+                console.log('더 이상 가져올 영상이 없습니다.');
+                return;
+            }
+            
+            console.log(`${videos.length}개의 추가 영상을 찾았습니다.`);
+            
+            // 채널 정보는 이미 캐시에 있으므로 바로 데이터 처리
+            const processedVideos = DataProcessor.processVideoData(videos);
+            
+            // 결과에 추가 표시
+            this.displayResults(processedVideos, true); // append = true
+            
+            // 페이지네이션 업데이트
+            this.setupPagination();
+            
+            // 로딩 완료
+            this.isLoadingMore = false;
+            
+        } catch (error) {
+            console.error('채널 영상 추가 로딩 오류:', error);
+            this.isLoadingMore = false;
+            UIUtils.showError(`추가 영상 로딩 실패: ${error.message}`);
         }
     }
     
@@ -661,14 +699,12 @@ class YouTubeAnalyzer {
         }
         
         if (append) {
-            // 기존 리스트에 추가
             STATE.displayedVideos = [...STATE.displayedVideos, ...videos];
         } else {
-            // 새로운 검색 결과
             STATE.displayedVideos = [...videos];
         }
         
-        UIUtils.updateResultsCount(STATE.displayedVideos.length);
+        //UIUtils.updateResultsCount(STATE.displayedVideos.length);
         
         // 모바일에서는 카드 레이아웃, 데스크톱에서는 테이블 레이아웃
         if (isMobile) {

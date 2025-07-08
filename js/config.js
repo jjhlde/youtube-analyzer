@@ -40,15 +40,20 @@ const CONFIG = {
 };
 
 // 전역 상태 관리
+// 전역 상태 관리
 const STATE = {
     allVideos: [],
     displayedVideos: [],
     channelCache: {},
     currentPageToken: '',
     nextPageToken: '',
-    currentSort: { column: null, direction: 'desc' }
+    currentSort: { column: null, direction: 'desc' },
+    // ★★★ 채널 모드 관련 속성 추가 ★★★
+    isChannelMode: false,
+    currentChannelId: null
 };
 
+// 상태 초기화 함수
 // 상태 초기화 함수
 function resetState() {
     STATE.allVideos = [];
@@ -56,4 +61,7 @@ function resetState() {
     STATE.channelCache = {};
     STATE.currentPageToken = '';
     STATE.nextPageToken = '';
+    // ★★★ 채널 모드 초기화 추가 ★★★
+    STATE.isChannelMode = false;
+    STATE.currentChannelId = null;
 }

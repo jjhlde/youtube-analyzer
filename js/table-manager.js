@@ -85,6 +85,9 @@ class TableManager {
         
         // 즐겨찾기 버튼 상태 업데이트
         FavoritesManager.updateFavoriteButtons();
+        // 현재 테이블에 있는 총 행 개수 업데이트
+        const currentRowCount = document.querySelectorAll('#table-body tr').length;
+        UIUtils.updateCurrentDisplayCount(currentRowCount);
     }
     
     // ★★★ 새로운 함수 - 테이블 행 HTML 생성 ★★★
@@ -262,6 +265,9 @@ class TableManager {
         
         // 즐겨찾기 버튼 상태 업데이트
         FavoritesManager.updateFavoriteButtons();
+        // 현재 모바일 카드 총 개수 업데이트
+        const currentCardCount = document.querySelectorAll('.mobile-video-card').length;
+        UIUtils.updateCurrentDisplayCount(currentCardCount);
     }
     
     // ★★★ 새로운 함수 - 모바일 카드 HTML 생성 ★★★

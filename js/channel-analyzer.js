@@ -132,18 +132,28 @@ class ChannelAnalyzer {
       }
       
       // 채널 영상 목록 가져오기
-      async getChannelVideos(channelId) {
-          const isMobile = window.innerWidth <= 768;
-          const suffix = isMobile ? 'Mobile' : '';
-          const maxResults = document.getElementById(`channelMaxResults${suffix}`)?.value || 50;
-          const order = document.getElementById(`channelOrder${suffix}`)?.value || 'date';
-          
-          const response = await fetch(`/api/channel-videos?channelId=${channelId}&maxResults=${maxResults}&order=${order}`);
-          if (!response.ok) {
-              throw new Error('채널 영상 목록을 가져올 수 없습니다.');
-          }
-          const data = await response.json();
-          return data.items || [];
+      async getChannelVideos(channelId, pageToken = '') {
+            const isMobile = window.innerWidth <= 768;
+            const suffix = isMobile ? 'Mobile' : '';
+            const maxResults = document.getElementById(`channelMaxResults${suffix}`)?.value || 50;
+            const order = document.getElementById(`channelOrder${suffix}`)?.value || 'date';
+            
+            // ★★★ pageToken 파라미터 추가 ★★★
+            let url = `/api/channel-videos?channelId=${channelId}&maxResults=${maxResults}&order=${order}`;
+            if (pageToken) {
+            url += `&pageToken=${pageToken}`;
+            }
+            
+            const response = await fetch(url);
+            if (!response.ok) {
+            throw new Error('채널 영상 목록을 가져올 수 없습니다.');
+            }
+            const data = await response.json();
+            
+            // ★★★ nextPageToken 저장 ★★★
+            STATE.nextPageToken = data.nextPageToken;
+            
+            return data.items || [];
       }
       
       // 채널 정보 표시
@@ -191,34 +201,41 @@ class ChannelAnalyzer {
       
       // 채널 영상 목록 표시
       displayChannelVideos(videos) {
-          // 기존 검색 결과를 채널 영상으로 대체
-          STATE.allVideos = videos;
-          STATE.displayedVideos = videos;
-          
-          // 채널 정보를 캐시에 추가
-          if (this.currentChannelData) {
-              STATE.channelCache[this.currentChannelData.id] = this.currentChannelData;
-          }
-          
-          // 데이터 처리
-          const processedVideos = DataProcessor.processVideoData(videos);
-          STATE.displayedVideos = processedVideos;
-          
-          // 결과 표시
-          UIUtils.updateResultsCount(processedVideos.length);
-          
-          const isMobile = window.innerWidth <= 768;
-          if (isMobile) {
-              TableManager.createMobileCardList();
-          } else {
-              TableManager.createHeader();
-              TableManager.updateBody();
-          }
-          
-          // 분석 탭도 활성화 (main.js의 함수 사용)
-          if (typeof YouTubeAnalyzer !== 'undefined' && YouTubeAnalyzer.enableAnalysisTab) {
-              YouTubeAnalyzer.enableAnalysisTab();
-          }
+            // ★★★ 기존 검색 결과를 채널 영상으로 대체하고 STATE에 저장 ★★★
+            STATE.allVideos = videos;
+            STATE.displayedVideos = videos;
+            
+            // 채널 정보를 캐시에 추가
+            if (this.currentChannelData) {
+            STATE.channelCache[this.currentChannelData.id] = this.currentChannelData;
+            }
+            
+            // ★★★ 채널 모드임을 표시 ★★★
+            STATE.isChannelMode = true;
+            STATE.currentChannelId = this.currentChannelData.id;
+            
+            // 데이터 처리
+            const processedVideos = DataProcessor.processVideoData(videos);
+            STATE.displayedVideos = processedVideos;
+            
+            // 결과 표시
+            UIUtils.updateResultsCount(processedVideos.length);
+            
+            const isMobile = window.innerWidth <= 768;
+            if (isMobile) {
+            TableManager.createMobileCardList();
+            } else {
+            TableManager.createHeader();
+            TableManager.updateBody();
+            }
+            
+            // ★★★ 무한 스크롤 설정 (채널 모드용) ★★★
+            YouTubeAnalyzer.setupInfiniteScroll();
+            
+            // 분석 탭도 활성화
+            if (typeof YouTubeAnalyzer !== 'undefined' && YouTubeAnalyzer.enableAnalysisTab) {
+            YouTubeAnalyzer.enableAnalysisTab();
+            }
       }
       
       // 채널 즐겨찾기 관리

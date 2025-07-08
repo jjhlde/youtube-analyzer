@@ -326,6 +326,9 @@ app.get('/api/channel-info', async (req, res) => {
 // ============================================
 // 채널의 영상 목록 가져오기 API
 // ============================================
+// ============================================
+// 채널의 영상 목록 가져오기 API
+// ============================================
 app.get('/api/channel-videos', async (req, res) => {
     console.log('📹 채널 영상 목록 API 호출:', req.query);
     try {
@@ -338,52 +341,66 @@ app.get('/api/channel-videos', async (req, res) => {
         
         const fetch = (await import('node-fetch')).default;
         
-        // 1단계: 채널 정보 가져와서 uploads 플레이리스트 ID 획득
-        let channelApiUrl;
-        if (channelId.startsWith('@')) {
-            const username = channelId.substring(1);
-            channelApiUrl = `https://www.googleapis.com/youtube/v3/channels?part=contentDetails&forUsername=${username}&key=${apiKey}`;
-        } else if (channelId.length === 24 && channelId.startsWith('UC')) {
-            channelApiUrl = `https://www.googleapis.com/youtube/v3/channels?part=contentDetails&id=${channelId}&key=${apiKey}`;
-        } else {
-            // 검색으로 채널 ID 찾기
-            const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=channel&q=${encodeURIComponent(channelId)}&maxResults=1&key=${apiKey}`;
-            const searchResponse = await fetch(searchUrl);
-            
-            if (searchResponse.ok) {
-                const searchData = await searchResponse.json();
-                if (searchData.items && searchData.items.length > 0) {
-                    const foundChannelId = searchData.items[0].snippet.channelId;
-                    channelApiUrl = `https://www.googleapis.com/youtube/v3/channels?part=contentDetails&id=${foundChannelId}&key=${apiKey}`;
-                } else {
-                    return res.status(404).json({ error: '채널을 찾을 수 없습니다.' });
-                }
+        // 1단계: 채널 정보 가져와서 uploads 플레이리스트 ID 획득 (첫 번째 페이지일 때만)
+        let uploadsPlaylistId;
+        
+        if (!pageToken) {
+            // 첫 번째 페이지 - 채널 정보부터 가져오기
+            let channelApiUrl;
+            if (channelId.startsWith('@')) {
+                const username = channelId.substring(1);
+                channelApiUrl = `https://www.googleapis.com/youtube/v3/channels?part=contentDetails&forUsername=${username}&key=${apiKey}`;
+            } else if (channelId.length === 24 && channelId.startsWith('UC')) {
+                channelApiUrl = `https://www.googleapis.com/youtube/v3/channels?part=contentDetails&id=${channelId}&key=${apiKey}`;
             } else {
-                return res.status(400).json({ error: '올바르지 않은 채널 식별자입니다.' });
+                // 검색으로 채널 ID 찾기
+                const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=channel&q=${encodeURIComponent(channelId)}&maxResults=1&key=${apiKey}`;
+                const searchResponse = await fetch(searchUrl);
+                
+                if (searchResponse.ok) {
+                    const searchData = await searchResponse.json();
+                    if (searchData.items && searchData.items.length > 0) {
+                        const foundChannelId = searchData.items[0].snippet.channelId;
+                        channelApiUrl = `https://www.googleapis.com/youtube/v3/channels?part=contentDetails&id=${foundChannelId}&key=${apiKey}`;
+                    } else {
+                        return res.status(404).json({ error: '채널을 찾을 수 없습니다.' });
+                    }
+                } else {
+                    return res.status(400).json({ error: '올바르지 않은 채널 식별자입니다.' });
+                }
+            }
+            
+            console.log('채널 contentDetails 요청:', channelApiUrl);
+            
+            const channelResponse = await fetch(channelApiUrl);
+            
+            if (!channelResponse.ok) {
+                const errorText = await channelResponse.text();
+                console.error('채널 정보 조회 실패:', errorText);
+                return res.status(channelResponse.status).json({ 
+                    error: '채널을 찾을 수 없습니다.',
+                    details: errorText 
+                });
+            }
+            
+            const channelData = await channelResponse.json();
+            
+            if (!channelData.items || channelData.items.length === 0) {
+                return res.status(404).json({ error: '채널을 찾을 수 없습니다.' });
+            }
+            
+            uploadsPlaylistId = channelData.items[0].contentDetails.relatedPlaylists.uploads;
+            console.log('업로드 플레이리스트 ID:', uploadsPlaylistId);
+        } else {
+            // ★★★ pageToken이 있으면 플레이리스트 ID를 세션에서 가져와야 하는데,
+            // 간단하게 channelId에서 직접 계산 ★★★
+            if (channelId.startsWith('UC')) {
+                uploadsPlaylistId = 'UU' + channelId.substring(2);
+            } else {
+                // 복잡한 경우는 에러 처리
+                return res.status(400).json({ error: '페이지네이션은 채널 ID 형태에서만 지원됩니다.' });
             }
         }
-        
-        console.log('채널 contentDetails 요청:', channelApiUrl);
-        
-        const channelResponse = await fetch(channelApiUrl);
-        
-        if (!channelResponse.ok) {
-            const errorText = await channelResponse.text();
-            console.error('채널 정보 조회 실패:', errorText);
-            return res.status(channelResponse.status).json({ 
-                error: '채널을 찾을 수 없습니다.',
-                details: errorText 
-            });
-        }
-        
-        const channelData = await channelResponse.json();
-        
-        if (!channelData.items || channelData.items.length === 0) {
-            return res.status(404).json({ error: '채널을 찾을 수 없습니다.' });
-        }
-        
-        const uploadsPlaylistId = channelData.items[0].contentDetails.relatedPlaylists.uploads;
-        console.log('업로드 플레이리스트 ID:', uploadsPlaylistId);
         
         // 2단계: 플레이리스트의 영상 목록 가져오기
         let playlistApiUrl = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${uploadsPlaylistId}&maxResults=${Math.min(maxResults, 50)}&key=${apiKey}`;
@@ -408,7 +425,11 @@ app.get('/api/channel-videos', async (req, res) => {
         const playlistData = await playlistResponse.json();
         
         if (!playlistData.items || playlistData.items.length === 0) {
-            return res.json({ items: [], pageInfo: { totalResults: 0 } });
+            return res.json({ 
+                items: [], 
+                pageInfo: { totalResults: 0 },
+                nextPageToken: null // ★★★ nextPageToken 명시적으로 null ★★★
+            });
         }
         
         // 3단계: 영상 ID들 추출
@@ -417,7 +438,11 @@ app.get('/api/channel-videos', async (req, res) => {
             .filter(id => id); // undefined 값 제거
         
         if (videoIds.length === 0) {
-            return res.json({ items: [], pageInfo: { totalResults: 0 } });
+            return res.json({ 
+                items: [], 
+                pageInfo: { totalResults: 0 },
+                nextPageToken: null 
+            });
         }
         
         console.log(`${videoIds.length}개 영상 ID 추출:`, videoIds.slice(0, 5)); // 처음 5개만 로그
@@ -454,7 +479,7 @@ app.get('/api/channel-videos', async (req, res) => {
             }
         }
         
-        // 5단계: 정렬 적용 (order 파라미터에 따라)
+        // 5단계: 정렬 적용
         if (order === 'viewCount') {
             allVideoItems.sort((a, b) => 
                 Number(b.statistics.viewCount || 0) - Number(a.statistics.viewCount || 0)
@@ -466,18 +491,18 @@ app.get('/api/channel-videos', async (req, res) => {
                 return bRatio - aRatio;
             });
         }
-        // date는 이미 플레이리스트에서 최신순으로 정렬됨
         
+        // ★★★ 6단계: nextPageToken 포함해서 응답 ★★★
         const result = {
             items: allVideoItems,
-            nextPageToken: playlistData.nextPageToken,
+            nextPageToken: playlistData.nextPageToken, // ★★★ 이 부분이 핵심! ★★★
             pageInfo: {
                 totalResults: allVideoItems.length,
                 resultsPerPage: allVideoItems.length
             }
         };
         
-        console.log(`✅ 채널 영상 목록 완료: 총 ${allVideoItems.length}개 반환`);
+        console.log(`✅ 채널 영상 목록 완료: 총 ${allVideoItems.length}개 반환, nextPageToken: ${playlistData.nextPageToken ? 'O' : 'X'}`);
         res.json(result);
         
     } catch (error) {
