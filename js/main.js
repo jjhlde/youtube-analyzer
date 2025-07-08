@@ -559,32 +559,25 @@ class YouTubeAnalyzer {
         try {
             console.log('채널 영상 추가 로딩:', STATE.currentChannelId, pageToken);
             
-            // 채널 영상 추가 가져오기
+            // ✅ 수정: channelAnalyzer의 getChannelVideos 메서드 직접 호출
             const videos = await channelAnalyzer.getChannelVideos(STATE.currentChannelId, pageToken);
             
             if (!videos || videos.length === 0) {
                 console.log('더 이상 가져올 영상이 없습니다.');
+                STATE.nextPageToken = null; // ✅ 추가: nextPageToken 초기화
                 return;
             }
             
-            console.log(`${videos.length}개의 추가 영상을 찾았습니다.`);
-            
-            // 채널 정보는 이미 캐시에 있으므로 바로 데이터 처리
+            // 데이터 처리 및 표시
             const processedVideos = DataProcessor.processVideoData(videos);
-            
-            // 결과에 추가 표시
-            this.displayResults(processedVideos, true); // append = true
-            
-            // 페이지네이션 업데이트
+            this.displayResults(processedVideos, true);
             this.setupPagination();
-            
-            // 로딩 완료
             this.isLoadingMore = false;
             
         } catch (error) {
             console.error('채널 영상 추가 로딩 오류:', error);
             this.isLoadingMore = false;
-            UIUtils.showError(`추가 영상 로딩 실패: ${error.message}`);
+            STATE.nextPageToken = null; // ✅ 추가: 에러 시에도 토큰 초기화
         }
     }
     
@@ -596,24 +589,72 @@ class YouTubeAnalyzer {
         // 기존 이벤트 리스너 제거
         if (this.handleScroll) {
             document.removeEventListener('scroll', this.handleScroll);
+            const contentArea = document.querySelector('.content-area');
+            const resultsContainer = document.querySelector('.results-container');
+            if (contentArea) contentArea.removeEventListener('scroll', this.handleScroll);
+            if (resultsContainer) resultsContainer.removeEventListener('scroll', this.handleScroll);
+            
+            // 모바일 컨테이너도 제거
+            const mobileContainer = document.getElementById('results-content-mobile');
+            if (mobileContainer) mobileContainer.removeEventListener('scroll', this.handleScroll);
         }
         
-        // 새 이벤트 리스너 추가
+        const isMobile = window.innerWidth <= 768;
+        
         this.handleScroll = this.throttle(() => {
             if (!this.infiniteScrollEnabled || this.isLoadingMore || !STATE.nextPageToken) {
                 return;
             }
             
-            const scrollPosition = window.innerHeight + window.scrollY;
-            const documentHeight = document.documentElement.offsetHeight;
-            const threshold = 300; // 하단에서 300px 전에 로드 시작
+            let scrollPosition, documentHeight, scrollContainer;
+            
+            if (isMobile) {
+                // 모바일: results-content-mobile 컨테이너 기준
+                scrollContainer = document.getElementById('results-content-mobile');
+                if (!scrollContainer) return;
+                
+                scrollPosition = scrollContainer.scrollTop + scrollContainer.clientHeight;
+                documentHeight = scrollContainer.scrollHeight;
+            } else {
+                // ✅ PC: content-area 기준으로 변경
+                scrollContainer = document.querySelector('.content-area');
+                if (!scrollContainer) {
+                    // fallback: document 기준
+                    scrollPosition = window.innerHeight + window.scrollY;
+                    documentHeight = document.documentElement.offsetHeight;
+                } else {
+                    scrollPosition = scrollContainer.scrollTop + scrollContainer.clientHeight;
+                    documentHeight = scrollContainer.scrollHeight;
+                }
+            }
+            
+            const threshold = 300;
+            
             
             if (scrollPosition >= documentHeight - threshold) {
+                
                 this.loadMoreResults();
             }
         }, 200);
         
-        document.addEventListener('scroll', this.handleScroll);
+        // ✅ 수정: 적절한 컨테이너에 이벤트 등록
+        if (isMobile) {
+            const mobileContainer = document.getElementById('results-content-mobile');
+            if (mobileContainer) {
+                mobileContainer.addEventListener('scroll', this.handleScroll);
+                
+            }
+        } else {
+            const contentArea = document.querySelector('.content-area');
+            if (contentArea) {
+                contentArea.addEventListener('scroll', this.handleScroll);
+                
+            } else {
+                // fallback
+                document.addEventListener('scroll', this.handleScroll);
+                
+            }
+        }
     }
     
     static async loadMoreResults() {
@@ -640,7 +681,12 @@ class YouTubeAnalyzer {
         resultsContent.appendChild(loadingDiv);
         
         try {
-            await this.searchVideos(STATE.nextPageToken);
+            // ✅ 수정: 채널 모드인지 확인하고 적절한 메서드 호출
+            if (STATE.isChannelMode) {
+                await this.loadMoreChannelVideos(STATE.nextPageToken);
+            } else {
+                await this.searchVideos(STATE.nextPageToken);
+            }
         } catch (error) {
             console.error('무한 스크롤 로딩 오류:', error);
             UIUtils.showNotification('추가 결과를 불러오는데 실패했습니다.', 'error');

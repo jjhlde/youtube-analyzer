@@ -141,7 +141,7 @@ class ChannelAnalyzer {
             // ★★★ pageToken 파라미터 추가 ★★★
             let url = `/api/channel-videos?channelId=${channelId}&maxResults=${maxResults}&order=${order}`;
             if (pageToken) {
-            url += `&pageToken=${pageToken}`;
+                  url += `&pageToken=${pageToken}`;
             }
             
             const response = await fetch(url);
@@ -151,7 +151,8 @@ class ChannelAnalyzer {
             const data = await response.json();
             
             // ★★★ nextPageToken 저장 ★★★
-            STATE.nextPageToken = data.nextPageToken;
+           // ✅ 수정: nextPageToken 올바르게 설정
+            STATE.nextPageToken = data.nextPageToken || null;
             
             return data.items || [];
       }
